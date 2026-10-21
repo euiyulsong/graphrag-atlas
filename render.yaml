@@ -1,0 +1,23 @@
+# Render.com Blueprint. This demo is intentionally protected by HTTP Basic Auth.
+# Do not commit or paste real credentials into this file.
+services:
+  - type: web
+    name: graphrag-atlas-seminar
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: OPENAI_CHAT_MODEL
+        value: gpt-6-luna
+      - key: OPENAI_EMBED_MODEL
+        value: text-embedding-3-small
+      - key: OPENAI_VISION_MODEL
+        value: gpt-6-luna
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: DEMO_PASSWORD
+        sync: false
