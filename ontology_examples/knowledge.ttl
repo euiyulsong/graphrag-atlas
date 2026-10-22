@@ -1,0 +1,11 @@
+@prefix ex: <https://example.org/logistics/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+ex:SoftwareSystem a owl:Class .
+ex:PredictionModel a owl:Class ; rdfs:subClassOf ex:SoftwareSystem .
+ex:Company a owl:Class .
+ex:uses a owl:ObjectProperty ; rdfs:domain ex:Company ; rdfs:range ex:SoftwareSystem .
+ex:uses owl:inverseOf ex:usedBy .
+ex:배송예측모델 a ex:PredictionModel .
+ex:고객물류사 a ex:Company ; ex:uses ex:배송예측모델 .

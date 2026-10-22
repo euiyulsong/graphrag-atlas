@@ -1,0 +1,5 @@
+PREFIX ex: <https://example.org/logistics/>
+SELECT ?company ?system WHERE {
+  ?company a ex:Company ; ex:uses ?system .
+  ?system a ex:SoftwareSystem .
+} ORDER BY ?company ?system

@@ -101,7 +101,7 @@ def build(payload:IndexRequest):
     with LOCK:
         STATES[idx.id]=idx
         while len(STATES)>12:STATES.popitem(last=False)
-    return {'index_id':idx.id,'stats':idx.stats,'graph':graph_payload(idx),
+    return {'index_id':idx.id,'stats':idx.stats,'graph':graph_payload(idx),'steps':idx.audit,
             'documents':[{'id':d['id'],'title':d['title']} for d in idx.docs],
             'groups':[{'id':g['id'],'title':g['title'],'documents':g['doc_ids']} for g in idx.groups]}
 
@@ -158,3 +158,20 @@ def compare(payload:CompareRequest):
 if __name__=='__main__':
     import uvicorn
     uvicorn.run('app:app',host=os.getenv('HOST','127.0.0.1'),port=int(os.getenv('PORT','8000')))
+
+
+@app.get('/api/ontology/example')
+def ontology_example():
+    from ontology_lab import DATA,SHAPES,QUERY
+    return {'data':DATA,'shapes':SHAPES,'query':QUERY}
+
+class OntologyRequest(BaseModel):
+    data: str = Field(max_length=18000)
+    shapes: str = Field(max_length=12000)
+    infer: bool = True
+
+@app.post('/api/ontology/run')
+def ontology_run(payload:OntologyRequest):
+    from ontology_lab import run_ontology
+    try: return run_ontology(payload.data,payload.shapes,payload.infer)
+    except Exception as exc: raise HTTPException(400,str(exc)[:240]) from exc

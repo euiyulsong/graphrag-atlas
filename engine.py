@@ -173,6 +173,7 @@ class Index:
     groups: list[dict]
     vectors: dict[str,list[float]] = field(default_factory=dict)
     stats: dict = field(default_factory=dict)
+    audit: list[dict] = field(default_factory=list)
 
     @property
     def entities(self) -> list[str]:
@@ -212,10 +213,12 @@ def create_index(mode: str, docs: list[dict], use_sample: bool = False, image_da
             clean.append({'id':f'D{len(clean)+1}','title':'업로드 이미지 · Vision 해석','text':'[이미지에서 관찰한 내용] '+description,'topic':'image'})
         else:
             clean.append({'id':f'D{len(clean)+1}','title':'업로드 이미지 (Offline 미해석)','text':'이미지가 첨부되었습니다. 실제 이미지 내용은 Live 모드에서 Vision API로 분석됩니다.','topic':'image'})
+    extractor='OpenAI grounded JSON extraction' if mode=='live' else 'sample triples' if use_sample else 'lexical co-occurrence (no semantic relation extraction)'
     if mode=='live':
         triples, atoms = extract_live(clean)
         if not triples:
             triples=heuristic_triples(clean)
+            extractor="LLM returned no triples; lexical fallback"
     elif use_sample:
         triples=[{'source':a,'relation':r,'target':b,'doc_id':d} for a,r,b,d in DEMO_TRIPLES]
         atoms=[]
@@ -240,6 +243,12 @@ def create_index(mode: str, docs: list[dict], use_sample: bool = False, image_da
                  'communities':len(groups),'seconds':round(time.perf_counter()-t0,2),
                  'api':'OpenAI API' if mode=='live' else '로컬 알고리즘',
                  'vision':bool(image_data_url and mode=='live')}
+    index.audit=[
+      {'title':'01 / Documents','kind':'index','data':{'documents':clean,'image_captioned':bool(image_data_url and mode=='live')}},
+      {'title':'02 / Entity & relation extraction','kind':'index','data':{'executor':extractor,'entities':index.entities,'triples':triples}},
+      {'title':'03 / Atomic facts','kind':'index','data':atoms},
+      {'title':'04 / Group construction','kind':'index','data':{'algorithm':'provided topic labels or lexical greedy grouping; no Leiden','groups':groups}},
+      {'title':'05 / Embedding index','kind':'index','data':{'model':os.getenv('OPENAI_EMBED_MODEL','text-embedding-3-small') if mode=='live' else None,'vectors':len(index.vectors),'dimension':len(next(iter(index.vectors.values()),[])),'vector_keys':list(index.vectors)}}]
     return index
 
 
@@ -275,7 +284,7 @@ class Retriever:
         return out
 
 
-def ppr(adjacency: dict[str,set[str]], seeds: dict[str,float], damping: float=.82, steps: int=22) -> dict[str,float]:
+def ppr(adjacency: dict[str,set[str]], seeds: dict[str,float], damping: float=.82, steps: int=22, audit: list | None=None) -> dict[str,float]:
     nodes=set(adjacency)|set(seeds)
     if not nodes: return {}
     vals={n:max(0.,seeds.get(n,0.)) for n in nodes}
@@ -285,7 +294,8 @@ def ppr(adjacency: dict[str,set[str]], seeds: dict[str,float], damping: float=.8
     else:
         vals={n: v/total for n,v in vals.items()}
     init=dict(vals)
-    for _ in range(steps):
+    if audit is not None: audit.append({"iteration":0,"scores":dict(sorted(vals.items()))})
+    for iteration in range(steps):
         nextvals={n:(1-damping)*init[n] for n in nodes}
         leak=0.0
         for node in nodes:
@@ -295,6 +305,7 @@ def ppr(adjacency: dict[str,set[str]], seeds: dict[str,float], damping: float=.8
             else: leak+=damping*vals[node]
         for n in nodes: nextvals[n]+=leak*init[n]
         vals=nextvals
+        if audit is not None: audit.append({"iteration":iteration+1,"scores":dict(sorted(vals.items(),key=lambda x:(-x[1],x[0])))})
     return vals
 
 
@@ -344,7 +355,7 @@ def retrieve(index: Index, query: str, method: str, qvec: list[float] | None = N
     ret=Retriever(index,query,qvec)
     docs=ret.docs(); doc_score=dict(docs)
     groups=ret.groups(); group_score=dict(groups)
-    selected=[]; trace=[]; focus=[]; reason=''
+    selected=[]; trace=[]; focus=[]; reason=''; propagation=[]
     scores=dict(doc_score)
     if method=='baseline':
         selected=[d for d,_ in docs[:4]]
@@ -372,7 +383,7 @@ def retrieve(index: Index, query: str, method: str, qvec: list[float] | None = N
         trace=['Low-level: 질문 엔티티 검색','High-level: 관련 엔티티의 Relation 확장','Entity + Relation에 연결된 원문 수집']
     elif method=='hipporag':
         seeds=top_entity_seeds(ret)
-        rank=ppr(entity_adj(index),seeds)
+        rank=ppr(entity_adj(index),seeds,audit=propagation)
         ranked=docs_from_entity(index,rank)
         selected=[d for d,_ in ranked[:4]] or [d for d,_ in docs[:4]]
         focus=[e for e,_ in sorted(rank.items(),key=lambda x:x[1],reverse=True)[:9]]
@@ -385,7 +396,7 @@ def retrieve(index: Index, query: str, method: str, qvec: list[float] | None = N
             if t['doc_id'] in recall_docs:
                 seeds[t['source']]=seeds.get(t['source'],0)+0.18
                 seeds[t['target']]=seeds.get(t['target'],0)+0.18
-        rank=ppr(entity_adj(index),seeds)
+        rank=ppr(entity_adj(index),seeds,audit=propagation)
         spread=dict(docs_from_entity(index,rank))
         combined={d:0.58*spread.get(d,0)+0.42*doc_score.get(d,0) for d in doc_score}
         selected=sorted(combined,key=combined.get,reverse=True)[:4]
@@ -406,7 +417,7 @@ def retrieve(index: Index, query: str, method: str, qvec: list[float] | None = N
                 adj[ek].add(t['doc_id']);adj[t['doc_id']].add(ek)
         seeds={'E:'+e:val for e,val in top_entity_seeds(ret).items()}
         for d,val in docs[:2]:seeds[d]=seeds.get(d,0)+0.15*val
-        ranks=ppr(dict(adj),seeds)
+        ranks=ppr(dict(adj),seeds,audit=propagation)
         selected=sorted((d['id'] for d in index.docs),key=lambda k:ranks.get(k,0),reverse=True)[:4]
         focus=[n[2:] for n,_ in sorted(ranks.items(),key=lambda x:x[1],reverse=True) if n.startswith('E:')][:8]
         scores.update({d:ranks.get(d,0) for d in selected})
@@ -471,10 +482,21 @@ def retrieve(index: Index, query: str, method: str, qvec: list[float] | None = N
         inner['route']=routed
         inner['reason']='Global 요약 조건' if globalq else '여러 근거 연결 조건' if multiq else '직접 사실 확인 조건'
         inner['method']='whenuse'
+        inner['steps'].insert(0,{'title':'Router (custom demo heuristic)','kind':'route','data':{'route':routed,'reason':inner['reason'],'not_from_paper':True}})
         return inner
 
     ev=evidence(index,selected,scores,limit=5)
-    return {'method':method,'evidence':ev,'trace':trace,'focus':focus,'route':None,'reason':reason}
+    local=locals()
+    detail={key:local[key] for key in ('seeds','related','ranked','rank','combined','found','atomic','winners','h') if key in local}
+    steps=[{'title':'01 / Actual search query','kind':'query','data':{'original':query,'search_query':query,'rewrite':'none','embedding_model':os.getenv('OPENAI_EMBED_MODEL','text-embedding-3-small') if index.mode=='live' else None,'dimension':len(qvec or []),'similarity':'0.72*cosine + 0.28*lexical' if index.mode=='live' else 'lexical overlap'}},
+           {'title':'02 / Document candidates','kind':'ranking','data':[{'id':d,'score':round(v,6),'text':index.lookup(d)} for d,v in docs]},
+           {'title':'03 / Executed retrieval operations','kind':'retrieval','data':{'method':method,'implementation':METHOD_BY_ID[method]['fidelity'],'operations':trace,'intermediates':detail}},
+           {'title':'04 / PPR iterations' if propagation else '04 / Activated objects','kind':'graph','data':{'iterations':propagation,'focus':focus}},
+           {'title':'05 / Selected evidence','kind':'context','data':ev}]
+    if method!='baseline':
+        steps.insert(2,{'title':'Index entity grounding scores (query NER is not run)','kind':'entities','data':sorted(ret.entity_scores().items(),key=lambda x:(-x[1],x[0]))})
+    return {'method':method,'evidence':ev,'trace':trace,'focus':focus,'route':None,'reason':reason,'steps':steps}
+
 
 
 def offline_answer(result: dict, query: str) -> str:
@@ -506,6 +528,7 @@ def answer(index: Index, method: str, query: str) -> dict:
     t0=time.perf_counter()
     qvec=embed_many([query])[0] if index.mode=='live' else None
     retrieved=retrieve(index,query,method,qvec)
+    retrieved['steps'].append(generation_step(retrieved,query,index.mode))
     retrieved['answer']=answer_live(retrieved,query) if index.mode=='live' else offline_answer(retrieved,query)
     retrieved['metrics']={'seconds':round(time.perf_counter()-t0,2),'evidence_count':len(retrieved['evidence']),
                           'mode':index.mode, 'answer_kind':'generated' if index.mode=='live' else 'retrieved-preview'}
@@ -533,6 +556,8 @@ def stream_answer(index: Index, method: str, query: str):
                          'evidence_count':len(result['evidence']),
                          'mode':index.mode,
                          'answer_kind':'generated' if index.mode=='live' else 'retrieved-preview'}
+    result['steps'].append(generation_step(result,query,index.mode))
+    for step in result['steps']: yield ('step',step)
     yield ('retrieval', result)
     if index.mode != 'live':
         yield ('delta', {'text':offline_answer(result, query)})
@@ -559,3 +584,8 @@ def stream_answer(index: Index, method: str, query: str):
             if fragment:
                 yield ('delta', {'text': fragment})
     yield ('done',{'seconds':round(time.perf_counter()-start,2),'mode':index.mode})
+
+
+def generation_step(result,query,mode):
+    context='\n\n'.join(f"[{e['id']}] {e['text']}" for e in result['evidence'])
+    return {'title':'06 / Generator input','kind':'generation','data':{'question':query,'context':context,'model':chat_model() if mode=='live' else None,'instruction':'제공한 근거만 사용하고 출처 ID를 표시. 수치와 부정문 보존. 근거가 없으면 모른다고 응답.','mode':mode,'note':'This is the application input and retrieval trace, not private model reasoning.'}}
