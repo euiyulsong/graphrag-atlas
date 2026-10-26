@@ -11,3 +11,7 @@
 Validation: 20 Python tests and a jsdom integration test cover lessons, ontology endpoints, graph/evidence presentation, error cases, and presentation navigation. PPTX package/layout/import checks pass. All slide previews were inspected. No native PowerPoint or authenticated production UI test is claimed.
 
 References: https://wikidocs.net/book/19432 and https://wikidocs.net/book/19813 for learning context, W3C RDF/OWL/SHACL/SPARQL standards, and paper/repository URLs in research.json and slide speaker notes.
+
+## Presentation wording revision
+
+All 60 slides now use plain Korean labels. Speaker notes walk the visible rows or diagram columns, explain terminology with the logistics example, identify implementation limits, and transition to the next slide. The browser presentation uses the same script.
