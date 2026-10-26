@@ -15,3 +15,7 @@ References: https://wikidocs.net/book/19432 and https://wikidocs.net/book/19813 
 ## Presentation wording revision
 
 All 60 slides now use plain Korean labels. Speaker notes walk the visible rows or diagram columns, explain terminology with the logistics example, identify implementation limits, and transition to the next slide. The browser presentation uses the same script.
+
+## Connected presentation revision
+
+The 60-slide presentation now groups each method as concept, logistics question, and process diagram. Summary/group methods are adjacent, PPR precedes HippoRAG, and the former appendix diagrams are integrated with their examples. Each slide includes a visible narrative bridge and aligned conversational notes. Web presentation and downloadable PPTX use the same order and script.

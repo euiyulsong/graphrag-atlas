@@ -72,7 +72,7 @@ def home():
 
 @app.get('/api/health')
 def health():
-    return {'ok': True, 'version':'ontology-workshop-easy-2026-10-26'}
+    return {'ok': True, 'version':'ontology-workshop-connected-2026-10-26'}
 
 @app.get('/api/download/slides')
 def download_slides():
