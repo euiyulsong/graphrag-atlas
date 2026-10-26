@@ -1,0 +1,1419 @@
+[
+  {
+    "title": "학습 목표와 실습 흐름",
+    "cols": [
+      [
+        "온톨로지 모델링",
+        "업무 질문을 정하고 클래스·개체·관계·제약으로 옮깁니다."
+      ],
+      [
+        "실행과 확인",
+        "같은 질의의 추론 전후 결과와 검증 실패 위치를 확인합니다."
+      ],
+      [
+        "GraphRAG 비교",
+        "검색 단위, 색인, 질의 연산, 최종 근거, 실패 조건을 구분합니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "본편은 온톨로지와 주요 검색군에 집중합니다. 각 방법의 상세 예시 슬라이드는 토론과 복습용으로 사용할 수 있습니다. 웹의 온톨로지 실습은 실제 RDF/OWL RL/SHACL 엔진을 실행합니다. GraphRAG 방법 선택 데모는 논문을 완전 재현한 시스템이 아닙니다.",
+    "sources": [
+      "https://www.w3.org/TR/rdf11-concepts/",
+      "https://www.w3.org/TR/owl2-primer/",
+      "https://www.w3.org/TR/shacl/",
+      "https://www.w3.org/TR/sparql11-query/"
+    ],
+    "lead": ""
+  },
+  {
+    "title": "업무 질문으로 정하는 온톨로지 범위",
+    "cols": [
+      [
+        "질문",
+        "날씨API에 의존하는 시스템은 무엇이며, 어떤 문서가 그 연결을 뒷받침하는가?"
+      ],
+      [
+        "개념의 경계",
+        "회사, 소프트웨어 시스템, 예측 모델, 문서를 구분합니다. 장애 영향의 확률이나 원인은 별도 판단입니다."
+      ],
+      [
+        "검증할 조건",
+        "회사는 소프트웨어 개체를 하나 이상 사용해야 합니다. 문자열 이름만 기록한 관계는 거절합니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "업무 시나리오와 용어 충돌을 먼저 정리한다는 접근을 참고했습니다. 이후 실습 모델과 예시는 직접 설계했습니다. 의존성이 있다고 곧바로 실제 장애 전파가 발생한다고 단정하지 않습니다.",
+    "sources": [
+      "https://wikidocs.net/335877",
+      "https://www.w3.org/TR/rdf11-concepts/",
+      "https://www.w3.org/TR/owl2-primer/",
+      "https://www.w3.org/TR/shacl/",
+      "https://www.w3.org/TR/sparql11-query/"
+    ],
+    "lead": "실습 사례: 물류사의 배차시스템과 도착예측모델"
+  },
+  {
+    "title": "DB 스키마·분류체계·온톨로지·지식 그래프",
+    "cols": null,
+    "table": [
+      [
+        "구분",
+        "명시하는 것",
+        "실습 예시"
+      ],
+      [
+        "DB 스키마",
+        "저장 구조, 키, 무결성 제약",
+        "system 테이블과 company_id"
+      ],
+      [
+        "분류체계",
+        "개념의 상하위 분류",
+        "PredictionModel의 상위 분류"
+      ],
+      [
+        "온톨로지",
+        "개념과 관계의 의미, 논리 공리",
+        "하위 클래스, 역관계, 전이성"
+      ],
+      [
+        "지식 그래프",
+        "실제 개체 사이의 사실",
+        "배차시스템 dependsOn 도착예측모델"
+      ]
+    ],
+    "code": null,
+    "notes": "DB도 JOIN과 제약으로 관계를 다룰 수 있습니다. 온톨로지의 구별점은 공식적인 의미와 추론 규칙을 공유할 수 있다는 점입니다. RDF 기반 KG는 스키마와 사실을 같은 트리플 표현으로 저장할 수도 있습니다.",
+    "sources": [
+      "https://www.w3.org/TR/rdf11-concepts/",
+      "https://www.w3.org/TR/owl2-primer/",
+      "https://www.w3.org/TR/shacl/",
+      "https://www.w3.org/TR/sparql11-query/"
+    ],
+    "lead": ""
+  },
+  {
+    "title": "클래스·개체·관계·리터럴",
+    "cols": null,
+    "table": [
+      [
+        "요소",
+        "역할",
+        "Turtle 예시"
+      ],
+      [
+        "Class",
+        "대상의 유형",
+        "ex:PredictionModel a owl:Class"
+      ],
+      [
+        "Individual",
+        "구체적인 대상",
+        "ex:도착예측모델 a ex:PredictionModel"
+      ],
+      [
+        "Object property",
+        "개체와 개체의 연결",
+        "ex:배차시스템 ex:dependsOn ex:도착예측모델"
+      ],
+      [
+        "Datatype property",
+        "문자·숫자 값의 연결",
+        "ex:운영문서 ex:text \"운영 설명\""
+      ]
+    ],
+    "code": null,
+    "notes": "IRI는 식별자이고 화면에 보이는 라벨과 다릅니다. 같은 이름이라고 같은 개체가 아니며, 서로 다른 IRI도 OWL에서는 자동으로 다르다고 보지 않습니다. 본 실습에서는 교육용 로컬 네임스페이스를 사용합니다.",
+    "sources": [
+      "https://www.w3.org/TR/rdf11-concepts/",
+      "https://www.w3.org/TR/owl2-primer/",
+      "https://www.w3.org/TR/shacl/",
+      "https://www.w3.org/TR/sparql11-query/"
+    ],
+    "lead": ""
+  },
+  {
+    "title": "RDF·RDFS·OWL·SHACL·SPARQL",
+    "cols": null,
+    "table": [
+      [
+        "표준",
+        "기능",
+        "실습에서 확인할 결과"
+      ],
+      [
+        "RDF / Turtle",
+        "그래프 모델 / 직렬화 문법",
+        "주어·술어·목적어 트리플"
+      ],
+      [
+        "RDFS",
+        "기본 유형과 클래스 계층",
+        "상위 클래스 타입"
+      ],
+      [
+        "OWL RL",
+        "규칙 기반 추론 가능한 OWL 프로파일",
+        "역관계와 전이 관계"
+      ],
+      [
+        "SHACL Core",
+        "현재 그래프에 대한 제약 검사",
+        "focusNode, path, constraint"
+      ],
+      [
+        "SPARQL SELECT",
+        "그래프 패턴 질의",
+        "추론 전후의 결과 행"
+      ]
+    ],
+    "code": null,
+    "notes": "RDF와 Turtle은 같은 층의 용어가 아닙니다. RDF는 데이터 모델, Turtle은 그 모델을 텍스트로 표현하는 문법입니다. OWL RL은 전체 OWL DL 추론기를 뜻하지 않습니다. 실습에서는 네트워크 질의와 임의 SPARQL을 허용하지 않고 세 가지 SELECT 예제를 제공합니다.",
+    "sources": [
+      "https://www.w3.org/TR/rdf11-concepts/",
+      "https://www.w3.org/TR/owl2-primer/",
+      "https://www.w3.org/TR/shacl/",
+      "https://www.w3.org/TR/sparql11-query/"
+    ],
+    "lead": ""
+  },
+  {
+    "title": "TBox와 ABox를 분리한 모델",
+    "cols": null,
+    "table": null,
+    "code": [
+      [
+        "의미 모델 / SCHEMA",
+        "ex:PredictionModel rdfs:subClassOf ex:SoftwareSystem .\nex:uses owl:inverseOf ex:usedBy .\nex:dependsOn a owl:TransitiveProperty ."
+      ],
+      [
+        "구체적 사실 / FACTS",
+        "ex:물류사 a ex:Company ; ex:uses ex:배차시스템 .\nex:배차시스템 ex:dependsOn ex:도착예측모델 .\nex:도착예측모델 a ex:PredictionModel ;\n  ex:dependsOn ex:날씨API ."
+      ]
+    ],
+    "notes": "TBox는 유형·관계에 대한 지식, ABox는 개체에 대한 사실로 설명할 수 있습니다. 별도 파일을 강제하는 구분은 아닙니다. 실습은 스키마와 사실을 분리 편집한 후 하나의 그래프로 합칩니다. prefix 선언은 실제 예제에 포함됩니다.",
+    "sources": [
+      "https://www.w3.org/TR/rdf11-concepts/",
+      "https://www.w3.org/TR/owl2-primer/",
+      "https://www.w3.org/TR/shacl/",
+      "https://www.w3.org/TR/sparql11-query/"
+    ],
+    "lead": ""
+  },
+  {
+    "title": "추론 1: 하위 클래스와 역관계",
+    "cols": null,
+    "table": [
+      [
+        "규칙",
+        "입력 사실",
+        "추가되는 사실"
+      ],
+      [
+        "subClassOf",
+        "도착예측모델 type PredictionModel",
+        "도착예측모델 type SoftwareSystem"
+      ],
+      [
+        "inverseOf",
+        "물류사 uses 배차시스템",
+        "배차시스템 usedBy 물류사"
+      ]
+    ],
+    "code": null,
+    "notes": "하위 클래스 선언은 PredictionModel의 모든 인스턴스에 적용됩니다. 클래스 이름을 단순히 바꾸는 작업이 아닙니다. uses와 usedBy는 반대 방향의 같은 관계를 나타냅니다. 실습의 규칙 설명은 엔진의 전체 증명 트리가 아니라 확인 가능한 주요 전제를 표시합니다.",
+    "sources": [
+      "https://www.w3.org/TR/rdf11-concepts/",
+      "https://www.w3.org/TR/owl2-primer/",
+      "https://www.w3.org/TR/shacl/",
+      "https://www.w3.org/TR/sparql11-query/"
+    ],
+    "lead": "원본 사실은 유지하고 규칙에서 도출한 트리플을 추가합니다"
+  },
+  {
+    "title": "추론 2: 전이 관계와 영향 질의",
+    "cols": null,
+    "table": null,
+    "code": [
+      [
+        "전이성의 입력",
+        "배차시스템 dependsOn 도착예측모델\n도착예측모델 dependsOn 날씨API\ndependsOn rdf:type owl:TransitiveProperty"
+      ],
+      [
+        "추론과 SPARQL",
+        "추가: 배차시스템 dependsOn 날씨API\nSELECT ?system WHERE {\n  ?system ex:dependsOn ex:날씨API\n}"
+      ]
+    ],
+    "notes": "일반적인 모든 관계가 전이적인 것은 아닙니다. dependsOn을 전이 속성으로 모델링한다는 도메인 가정이 있어야 합니다. 직접 의존과 간접 의존을 구분해야 하는 업무라면 직접 속성과 전이 속성을 따로 두는 편이 적절할 수 있습니다. 이 질의는 사고의 실제 원인이나 영향 확률을 계산하지 않습니다.",
+    "sources": [
+      "https://www.w3.org/TR/rdf11-concepts/",
+      "https://www.w3.org/TR/owl2-primer/",
+      "https://www.w3.org/TR/shacl/",
+      "https://www.w3.org/TR/sparql11-query/"
+    ],
+    "lead": ""
+  },
+  {
+    "title": "domain/range는 타입을 추론합니다",
+    "cols": null,
+    "table": null,
+    "code": [
+      [
+        "선언과 사실",
+        "ex:uses rdfs:domain ex:Company ;\n        rdfs:range ex:SoftwareSystem .\nex:미등록조직 ex:uses ex:미등록도구 ."
+      ],
+      [
+        "도출 결과",
+        "ex:미등록조직 a ex:Company .\nex:미등록도구 a ex:SoftwareSystem .\n관계의 입력을 거절하는 동작은 없습니다."
+      ]
+    ],
+    "notes": "실습 6에서 명시 타입이 없는 조직과 도구가 추론 후 각각 Company, SoftwareSystem으로 분류되는 것을 확인합니다. domain/range를 SQL의 foreign key/type check처럼 해석하면 잘못된 기대가 생깁니다. 불일치를 감지하려면 클래스 disjointness나 별도의 검증 제약을 함께 설계해야 합니다.",
+    "sources": [
+      "https://www.w3.org/TR/rdf11-concepts/",
+      "https://www.w3.org/TR/owl2-primer/",
+      "https://www.w3.org/TR/shacl/",
+      "https://www.w3.org/TR/sparql11-query/"
+    ],
+    "lead": ""
+  },
+  {
+    "title": "열린 세계 가정과 SHACL 검증",
+    "cols": [
+      [
+        "OWL의 열린 세계",
+        "uses 관계가 없다고 해서 회사가 아무 시스템도 사용하지 않는다고 결론 내리지는 않습니다."
+      ],
+      [
+        "SHACL의 검사 범위",
+        "현재 제공한 그래프에서 target 노드와 path를 검사합니다. minCount 1은 값이 없으면 위반입니다."
+      ],
+      [
+        "추론과 검증 순서",
+        "추론으로 타입이 추가되면 SHACL 대상 노드와 sh:class 판정이 달라질 수 있습니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "SHACL을 단순히 모든 상황의 닫힌 세계 의미론과 동일시하지 않습니다. 이 실습은 입력 그래프 검증을 먼저 수행하고, 선택한 경우 OWL RL 확장 후 다시 검증합니다. 대상 노드가 없는 shape는 위반을 만들지 않을 수 있으므로 통과 여부만으로 데이터 품질을 판단하지 않습니다.",
+    "sources": [
+      "https://www.w3.org/TR/rdf11-concepts/",
+      "https://www.w3.org/TR/owl2-primer/",
+      "https://www.w3.org/TR/shacl/",
+      "https://www.w3.org/TR/sparql11-query/"
+    ],
+    "lead": ""
+  },
+  {
+    "title": "SHACL의 실패 위치를 읽는 법",
+    "cols": null,
+    "table": null,
+    "code": [
+      [
+        "제약",
+        "ex:CompanyShape a sh:NodeShape ;\n sh:targetClass ex:Company ;\n sh:property [ sh:path ex:uses ; sh:minCount 1 ;\n   sh:nodeKind sh:IRI ; sh:class ex:SoftwareSystem ] ."
+      ],
+      [
+        "관계 누락 예제의 결과",
+        "focusNode = ex:물류사\nresultPath = ex:uses\nconstraint = sh:MinCountConstraintComponent\n조치: Company 개체를 지우지 말고 uses 관계를 복구합니다."
+      ]
+    ],
+    "notes": "문자열 \"배차시스템\"은 ex:배차시스템 IRI와 다릅니다. 문자열 예제는 nodeKind/class 제약 위반을 보여 줍니다. SHACL 통과는 제약이 검사한 범위에서의 통과이며 모든 사실의 진실을 보증하지 않습니다.",
+    "sources": [
+      "https://www.w3.org/TR/rdf11-concepts/",
+      "https://www.w3.org/TR/owl2-primer/",
+      "https://www.w3.org/TR/shacl/",
+      "https://www.w3.org/TR/sparql11-query/"
+    ],
+    "lead": ""
+  },
+  {
+    "title": "SPARQL과 원문 근거의 연결",
+    "cols": null,
+    "table": null,
+    "code": [
+      [
+        "그래프 패턴",
+        "SELECT ?system WHERE {\n  ?system ex:dependsOn ex:날씨API\n} ORDER BY ?system"
+      ],
+      [
+        "문서 연결",
+        "ex:운영문서 ex:describes ex:배차시스템 ;\n ex:text \"배차시스템은 예측 결과로 배차 순서를 정한다.\" .\n조회 개체에 연결된 문서 텍스트를 근거로 표시합니다."
+      ]
+    ],
+    "notes": "실습의 describes는 직접 작성한 개체-문서 매핑입니다. LLM이 문서에서 자동 추출한 관계라고 표시하지 않습니다. 문서별 사실 생성일, 추출 모델, confidence, 검수 상태를 저장하려면 named graph나 reification 등 provenance 모델을 별도로 설계할 수 있습니다.",
+    "sources": [
+      "https://www.w3.org/TR/rdf11-concepts/",
+      "https://www.w3.org/TR/owl2-primer/",
+      "https://www.w3.org/TR/shacl/",
+      "https://www.w3.org/TR/sparql11-query/"
+    ],
+    "lead": ""
+  },
+  {
+    "title": "온톨로지 실습: 정상 동작과 오류 주입",
+    "cols": null,
+    "table": [
+      [
+        "실습",
+        "직접 바꿀 내용",
+        "확인할 결과"
+      ],
+      [
+        "1. 타입",
+        "추론 OFF / ON",
+        "SoftwareSystem 2행 / 3행"
+      ],
+      [
+        "2. 의존 경로",
+        "impact 질의 선택",
+        "직접 의존 1행 / 간접 포함 2행"
+      ],
+      [
+        "3. 역관계",
+        "inverse 질의 선택",
+        "0행 / 물류사 1행"
+      ],
+      [
+        "4. 필수값",
+        "uses만 삭제",
+        "SHACL minCount 실패"
+      ],
+      [
+        "5. IRI",
+        "uses 값을 문자열로 변경",
+        "IRI·클래스 검사 실패"
+      ],
+      [
+        "6. 타입 추론",
+        "domain/range 예제 선택",
+        "명시 타입 없는 개체의 타입 생성"
+      ]
+    ],
+    "code": null,
+    "notes": "웹의 Ontology workshop에서 시나리오를 고르면 스키마·사실·제약·질의를 함께 불러옵니다. 현재 예제 복원 버튼으로 초기화합니다. 실행 결과에는 원본/현재 질의 결과, 그래프, 새 사실의 전제, 위반 위치, 문서 근거가 표시됩니다. 입력과 결과는 JSON으로 내려받아 복습할 수 있습니다.",
+    "sources": [
+      "https://www.w3.org/TR/rdf11-concepts/",
+      "https://www.w3.org/TR/owl2-primer/",
+      "https://www.w3.org/TR/shacl/",
+      "https://www.w3.org/TR/sparql11-query/"
+    ],
+    "lead": ""
+  },
+  {
+    "title": "온톨로지의 운영과 변경 관리",
+    "cols": [
+      [
+        "범위와 소유자",
+        "질문 목록, 용어 정의, 현업 담당자, IRI 발급 규칙을 함께 관리합니다."
+      ],
+      [
+        "회귀 검사",
+        "스키마 변경 시 대표 질의 결과와 SHACL 위반을 이전 버전과 비교합니다."
+      ],
+      [
+        "추출 품질",
+        "LLM 추출값은 후보입니다. 출처·시간·검수 상태를 남기고 자동 승인 범위를 정합니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "온톨로지가 검색 결과를 개선하는지는 평가가 필요합니다. 불확실한 엔티티 통합에 owl:sameAs를 쓰면 강한 동일성 추론이 발생할 수 있으므로 후보 매핑과 확정 동일성을 구분합니다. 조직 전체 모델을 한 번에 완성하려 하기보다 명확한 업무 질문을 기준으로 점진적으로 확장합니다.",
+    "sources": [
+      "https://www.w3.org/TR/rdf11-concepts/",
+      "https://www.w3.org/TR/owl2-primer/",
+      "https://www.w3.org/TR/shacl/",
+      "https://www.w3.org/TR/sparql11-query/"
+    ],
+    "lead": ""
+  },
+  {
+    "title": "온톨로지 추론과 GraphRAG 검색",
+    "cols": null,
+    "table": [
+      [
+        "구분",
+        "입력과 연산",
+        "결과"
+      ],
+      [
+        "OWL RL 추론",
+        "공리·명시 사실에 규칙 적용",
+        "논리적으로 함의된 트리플"
+      ],
+      [
+        "GraphRAG 검색",
+        "질의와 그래프에서 순위·경로 계산",
+        "답변 후보 근거"
+      ],
+      [
+        "LLM 생성",
+        "질문과 검색 근거를 모델에 입력",
+        "자연어 답변과 인용"
+      ]
+    ],
+    "code": null,
+    "notes": "PPR에서 점수가 높다는 사실은 OWL의 entailment가 아닙니다. GraphRAG는 RDF/OWL이 필수인 단일 알고리즘이 아닙니다. RAPTOR는 엔티티 KG 대신 요약 트리를 사용합니다. OWL이 지원하는 논리 추론과 LLM의 비정형 추론을 구분합니다.",
+    "sources": [
+      "https://www.w3.org/TR/rdf11-concepts/",
+      "https://www.w3.org/TR/owl2-primer/",
+      "https://www.w3.org/TR/shacl/",
+      "https://www.w3.org/TR/sparql11-query/",
+      "https://arxiv.org/abs/2401.18059",
+      "https://arxiv.org/abs/2405.14831"
+    ],
+    "lead": ""
+  },
+  {
+    "title": "GraphRAG 변형을 비교하는 다섯 축",
+    "cols": null,
+    "table": [
+      [
+        "비교축",
+        "구체적으로 확인할 질문"
+      ],
+      [
+        "검색 단위",
+        "chunk, entity, relation, summary, atom, image 중 무엇인가?"
+      ],
+      [
+        "색인 구축",
+        "무엇을 추출하고 어떤 edge와 요약을 만드는가?"
+      ],
+      [
+        "질의 연산",
+        "ANN, 키워드, PPR, 계층 탐색, 학습 모델 중 무엇인가?"
+      ],
+      [
+        "생성 근거",
+        "원문, 경로, 요약 보고서 중 무엇을 LLM에 주는가?"
+      ],
+      [
+        "비용과 실패",
+        "추출 오류·누락·지연·갱신 비용이 어디에서 생기는가?"
+      ]
+    ],
+    "code": null,
+    "notes": "이 비교축은 본 자료에서 사용하는 분석 틀입니다. 연대순 계보나 모든 논문이 같은 문제를 해결한다는 주장을 하지 않습니다. 아래 방법별 슬라이드는 원 논문과 공개 구현을 참고합니다.",
+    "sources": [
+      "https://arxiv.org/abs/2401.18059",
+      "https://arxiv.org/abs/2404.16130",
+      "https://arxiv.org/abs/2410.05779",
+      "https://arxiv.org/abs/2405.14831",
+      "https://arxiv.org/abs/2502.14802",
+      "https://arxiv.org/abs/2502.09891",
+      "https://arxiv.org/abs/2510.10114",
+      "https://arxiv.org/abs/2604.20844",
+      "https://arxiv.org/abs/2501.06713",
+      "https://arxiv.org/abs/2502.01113",
+      "https://arxiv.org/abs/2509.24276",
+      "https://arxiv.org/abs/2510.12323",
+      "https://arxiv.org/abs/2506.05690"
+    ],
+    "lead": ""
+  },
+  {
+    "title": "RAPTOR의 색인과 검색",
+    "cols": [
+      [
+        "검색 단위",
+        "Chunk와 요약 노드"
+      ],
+      [
+        "색인 단계",
+        "문서 임베딩을 군집화하고 군집 요약을 재귀적으로 올려 여러 추상화 수준을 만듭니다."
+      ],
+      [
+        "질의 단계",
+        "질문과 모든 레벨의 노드를 비교하거나 트리를 단계적으로 내려갑니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "색인 상세: 원문 Chunk + embedding / UMAP 차원축소 / GMM soft clustering / Cluster별 LLM 요약 생성 / Summary를 재임베딩하며 재귀 반복 / Leaf + Summary tree 저장\n검색 상세: 질문 embedding / Tree 전체 또는 level별 similarity 탐색 / Leaf / Summary node 선택 / 다양한 해상도의 근거 병합 / LLM answer + source trace\n공개 구현: https://github.com/parthsarthi03/raptor\n실습 한계: RAPTOR는 엔티티 관계 그래프보다 요약 트리 기반 다중 해상도 검색에 집중한다. soft cluster와 recursive summary의 선택을 설명한다. 사이트는 2-level proxy.",
+    "sources": [
+      "https://arxiv.org/abs/2401.18059",
+      "https://github.com/parthsarthi03/raptor"
+    ],
+    "lead": "원 논문 메커니즘"
+  },
+  {
+    "title": "RAPTOR의 예시와 구현 범위",
+    "cols": [
+      [
+        "예시 질문",
+        "배차 운영 전반의 변화는?"
+      ],
+      [
+        "검색할 근거",
+        "상위 운영 요약을 찾고 구체적 근거는 하위 원문으로 확인합니다."
+      ],
+      [
+        "오류와 비용",
+        "요약 손실이 누적될 수 있습니다. 트리는 관계 술어를 가진 OWL KG가 아닙니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "이 예시 질문은 설명용으로 작성했으며 논문의 벤치마크 성능을 측정한 결과가 아닙니다.\n실제 웹 구현: topic/lexical 문서 그룹 / 문장 발췌로 2-level summary / 상위 그룹 2개와 자식 문서 점수 계산 / 그룹·원문 결합\nRAPTOR는 엔티티 관계 그래프보다 요약 트리 기반 다중 해상도 검색에 집중한다. soft cluster와 recursive summary의 선택을 설명한다. 사이트는 2-level proxy.",
+    "sources": [
+      "https://arxiv.org/abs/2401.18059",
+      "https://github.com/parthsarthi03/raptor"
+    ],
+    "lead": "설명용 사례. 원 구현 전체 재현과 구분합니다."
+  },
+  {
+    "title": "Microsoft GraphRAG의 색인과 검색",
+    "cols": [
+      [
+        "검색 단위",
+        "Entity KG와 community report"
+      ],
+      [
+        "색인 단계",
+        "LLM이 개체와 관계를 추출하고 community 계층별 보고서를 작성합니다."
+      ],
+      [
+        "질의 단계",
+        "Global은 보고서별 부분 응답을 만든 뒤 합칩니다. Local은 특정 개체 주변 근거를 모읍니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "색인 상세: Corpus → Text units / LLM Entity / Relationship 추출 (Claims 선택) / Entity description / edge 병합 / Leiden 계층 커뮤니티 탐지 / Community Report 생성 + 저장\n검색 상세: Global 질문 → Community Reports / Report별 map-stage 부분 답변 / 중요도 / 품질 점수 지정 / Reduce 단계에서 핵심 근거 종합 / 최종 답변 + report citations\n공개 구현: https://github.com/microsoft/graphrag\n실습 한계: 논문은 Global query-focused summarization이 주 문제다. Local search는 entity-neighborhood 및 source passages를 사용한다. 모든 report 대상으로 map reduce하면 비용이 크다. 사이트의 그룹 요약은 Leiden/map-reduce 생략.",
+    "sources": [
+      "https://arxiv.org/abs/2404.16130",
+      "https://github.com/microsoft/graphrag"
+    ],
+    "lead": "원 논문 메커니즘"
+  },
+  {
+    "title": "Microsoft GraphRAG의 예시와 구현 범위",
+    "cols": [
+      [
+        "예시 질문",
+        "전체 운영 문서의 공통 위험은?"
+      ],
+      [
+        "검색할 근거",
+        "여러 community의 부분 답변을 합쳐 코퍼스 수준 주제를 설명합니다."
+      ],
+      [
+        "오류와 비용",
+        "전체 색인과 요약 비용이 듭니다. Global 요약은 개별 수치의 원문 확인을 대신하지 않습니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "이 예시 질문은 설명용으로 작성했으며 논문의 벤치마크 성능을 측정한 결과가 아닙니다.\n실제 웹 구현: topic/lexical 그룹 / 문장 발췌 보고서 / 질문 키워드로 전체/일부 그룹 선택 / 단일 generator 합성\n논문은 Global query-focused summarization이 주 문제다. Local search는 entity-neighborhood 및 source passages를 사용한다. 모든 report 대상으로 map reduce하면 비용이 크다. 사이트의 그룹 요약은 Leiden/map-reduce 생략.",
+    "sources": [
+      "https://arxiv.org/abs/2404.16130",
+      "https://github.com/microsoft/graphrag"
+    ],
+    "lead": "설명용 사례. 원 구현 전체 재현과 구분합니다."
+  },
+  {
+    "title": "LightRAG의 색인과 검색",
+    "cols": [
+      [
+        "검색 단위",
+        "Entity·relation profile과 chunk"
+      ],
+      [
+        "색인 단계",
+        "추출 결과를 병합하고 그래프와 벡터·키값 저장소에 원문 출처를 연결합니다."
+      ],
+      [
+        "질의 단계",
+        "Low-level 키워드로 개체, high-level 키워드로 관계를 찾고 근거를 합칩니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "색인 상세: Chunk 분할 및 고유 ID / LLM 엔티티 / 관계 추출 + dedup / Entity / Relation 설명 병합 / Graph + Vector / KV index 구축 / 신규 문서 증분 업데이트\n검색 상세: Query → low / high keyword 추출 / Low-level entity 벡터 검색 / High-level relation 벡터 검색 / Neighbor expansion + chunk provenance / Hybrid context 정렬 → LLM\n공개 구현: https://github.com/HKUDS/LightRAG\n실습 한계: Low-level은 entity 정보, high-level은 relationship 중심이다. 최근 구현은 hybrid/mix mode 및 reranker 등을 지원한다. 사이트는 dual-level core idea proxy.",
+    "sources": [
+      "https://arxiv.org/abs/2410.05779",
+      "https://github.com/HKUDS/LightRAG"
+    ],
+    "lead": "원 논문 메커니즘"
+  },
+  {
+    "title": "LightRAG의 예시와 구현 범위",
+    "cols": [
+      [
+        "예시 질문",
+        "배차시스템이 예측모델을 사용하는 이유는?"
+      ],
+      [
+        "검색할 근거",
+        "개체 설명과 관련 관계, 해당 chunk를 함께 제공합니다."
+      ],
+      [
+        "오류와 비용",
+        "키워드와 관계 추출 오류가 검색에 영향을 줍니다. MS Global map-reduce와 다른 방식입니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "이 예시 질문은 설명용으로 작성했으며 논문의 벤치마크 성능을 측정한 결과가 아닙니다.\n실제 웹 구현: 인덱스 엔티티 유사도 / seed 인접 triple 선택 / 연결된 문서 점수 보정 / 문서 Top-4\nLow-level은 entity 정보, high-level은 relationship 중심이다. 최근 구현은 hybrid/mix mode 및 reranker 등을 지원한다. 사이트는 dual-level core idea proxy.",
+    "sources": [
+      "https://arxiv.org/abs/2410.05779",
+      "https://github.com/HKUDS/LightRAG"
+    ],
+    "lead": "설명용 사례. 원 구현 전체 재현과 구분합니다."
+  },
+  {
+    "title": "HippoRAG의 색인과 검색",
+    "cols": [
+      [
+        "검색 단위",
+        "Entity KG와 passage 매핑"
+      ],
+      [
+        "색인 단계",
+        "OpenIE 트리플로 그래프를 만들고 개체와 원문 passage의 연결을 저장합니다."
+      ],
+      [
+        "질의 단계",
+        "질의 엔티티를 seed로 정렬하고 PPR 확산 점수를 passage 순위로 옮깁니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "색인 상세: Passage 단위 문서 분할 / OpenIE Triple 추출 / Triple 정규화 / 동의어 연결 / Entity KG + Passage mapping 저장 / 비모수 장기기억 인덱스\n검색 상세: Query에서 named-entity / keyphrase seed / KG node grounding / Personalized PageRank 확산 / 높은 score entity → Passage 매핑 / 근거 passage로 단일 LLM 생성\n공개 구현: https://github.com/OSU-NLP-Group/HippoRAG\n실습 한계: PPR은 seed 중심으로 graph 전체에 확률질량을 전파하여 연관 passage를 찾는다. 틀린 triple 한 개가 잘못된 경로를 만들 위험을 언급한다.",
+    "sources": [
+      "https://arxiv.org/abs/2405.14831",
+      "https://github.com/OSU-NLP-Group/HippoRAG"
+    ],
+    "lead": "원 논문 메커니즘"
+  },
+  {
+    "title": "HippoRAG의 예시와 구현 범위",
+    "cols": [
+      [
+        "예시 질문",
+        "날씨 정보를 사용하는 시스템을 쓰는 회사는?"
+      ],
+      [
+        "검색할 근거",
+        "직접 비슷하지 않은 문서도 연결 개체를 통해 근거 후보가 됩니다."
+      ],
+      [
+        "오류와 비용",
+        "허브 노드·잘못된 관계가 점수를 퍼뜨립니다. PPR은 사실의 진실 확률이 아닙니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "이 예시 질문은 설명용으로 작성했으며 논문의 벤치마크 성능을 측정한 결과가 아닙니다.\n실제 웹 구현: 인덱스 엔티티 grounding / 무방향 KG / 실제 PPR 22회 / 엔티티 점수를 문서로 투영\nPPR은 seed 중심으로 graph 전체에 확률질량을 전파하여 연관 passage를 찾는다. 틀린 triple 한 개가 잘못된 경로를 만들 위험을 언급한다.",
+    "sources": [
+      "https://arxiv.org/abs/2405.14831",
+      "https://github.com/OSU-NLP-Group/HippoRAG"
+    ],
+    "lead": "설명용 사례. 원 구현 전체 재현과 구분합니다."
+  },
+  {
+    "title": "HippoRAG 2의 색인과 검색",
+    "cols": [
+      [
+        "검색 단위",
+        "Phrase와 passage를 통합한 그래프"
+      ],
+      [
+        "색인 단계",
+        "원문 passage를 그래프에 직접 통합해 개념 연결과 문맥을 함께 보존합니다."
+      ],
+      [
+        "질의 단계",
+        "질문 관련 트리플 검색 후 LLM recognition memory로 걸러 PPR의 시작 신호를 구성합니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "색인 상세: OpenIE 문서 / phrase 노드 / Phrase–phrase semantic links / Passage node를 graph와 직접 연결 / Passage/phrase embedding 저장 / KG + Passage augmented memory\n검색 상세: 질문–triple 유사도 검색 / 온라인 LLM recognition filtering / 선택 triple의 phrase + passage seed / Passage 통합 graph에서 PPR / 상위 passage로 LLM 답변\n공개 구현: https://github.com/OSU-NLP-Group/HippoRAG\n실습 한계: 원 방식은 query-to-triple retrieval과 온라인 LLM recognition filtering, passage 노드 통합 PPR를 사용한다. 현재 데모는 Top-3 문서의 엔티티 seed 보정과 점수 혼합이며 recognition filtering은 실행하지 않는다.",
+    "sources": [
+      "https://arxiv.org/abs/2502.14802",
+      "https://github.com/OSU-NLP-Group/HippoRAG"
+    ],
+    "lead": "원 논문 메커니즘"
+  },
+  {
+    "title": "HippoRAG 2의 예시와 구현 범위",
+    "cols": [
+      [
+        "예시 질문",
+        "어느 회사가 날씨 기반 배차를 하는가?"
+      ],
+      [
+        "검색할 근거",
+        "관련 트리플과 passage 신호를 함께 사용해 연결 근거를 찾습니다."
+      ],
+      [
+        "오류와 비용",
+        "온라인 LLM 필터 비용과 오판 가능성이 있습니다. 단순 PPR 한 번만으로 원 방법을 재현하지 못합니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "이 예시 질문은 설명용으로 작성했으며 논문의 벤치마크 성능을 측정한 결과가 아닙니다.\n실제 웹 구현: 문서 Top-3 검색 / 관련 엔티티 seed 가산 / 엔티티 KG PPR / 문서 점수와 가중 결합\n원 방식은 query-to-triple retrieval과 온라인 LLM recognition filtering, passage 노드 통합 PPR를 사용한다. 현재 데모는 Top-3 문서의 엔티티 seed 보정과 점수 혼합이며 recognition filtering은 실행하지 않는다.",
+    "sources": [
+      "https://arxiv.org/abs/2502.14802",
+      "https://github.com/OSU-NLP-Group/HippoRAG"
+    ],
+    "lead": "설명용 사례. 원 구현 전체 재현과 구분합니다."
+  },
+  {
+    "title": "ArchRAG의 색인과 검색",
+    "cols": [
+      [
+        "검색 단위",
+        "속성을 반영한 community 계층"
+      ],
+      [
+        "색인 단계",
+        "연결 구조와 의미 속성을 함께 반영하는 계층적 community를 구성합니다."
+      ],
+      [
+        "질의 단계",
+        "C-HNSW 계층 검색과 분석 과정을 통해 관련 community의 범위를 제어합니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "색인 상세: Text Chunk → Entity KG / Node/Edge attribute embeddings / Connectivity + Semantics 기반 attributed communities / Community별 재귀 LLM 요약 / C-HNSW 계층 검색 인덱스\n검색 상세: Query vector → 상위 community / C-HNSW intra / inter-layer 탐색 / Coarse→Fine candidate expansion / Adaptive relevance filtering / Selected summaries + passages → LLM\n공개 구현: https://github.com/sam234990/ArchRAG\n실습 한계: C-HNSW는 원래의 vector ANN hierarchy에서 착안한 community 탐색이다. semantic attribute를 넣어 topology-only community 한계를 줄인다. 사이트에서는 단순 coarse-to-fine selector.",
+    "sources": [
+      "https://arxiv.org/abs/2502.09891",
+      "https://github.com/sam234990/ArchRAG"
+    ],
+    "lead": "원 논문 메커니즘"
+  },
+  {
+    "title": "ArchRAG의 예시와 구현 범위",
+    "cols": [
+      [
+        "예시 질문",
+        "날씨 관련 운영 이슈를 요약하면?"
+      ],
+      [
+        "검색할 근거",
+        "전체 보고서를 모두 읽기보다 관련 community를 좁혀 근거로 사용합니다."
+      ],
+      [
+        "오류와 비용",
+        "계층 구축·인덱스 유지 비용이 있습니다. 단순 topic 그룹은 attributed clustering의 대체물이 아닙니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "이 예시 질문은 설명용으로 작성했으며 논문의 벤치마크 성능을 측정한 결과가 아닙니다.\n실제 웹 구현: topic/lexical 1-level 그룹 / 유사 그룹 Top-2 / 해당 자식만 문서 재정렬 / 요약·원문 결합\nC-HNSW는 원래의 vector ANN hierarchy에서 착안한 community 탐색이다. semantic attribute를 넣어 topology-only community 한계를 줄인다. 사이트에서는 단순 coarse-to-fine selector.",
+    "sources": [
+      "https://arxiv.org/abs/2502.09891",
+      "https://github.com/sam234990/ArchRAG"
+    ],
+    "lead": "설명용 사례. 원 구현 전체 재현과 구분합니다."
+  },
+  {
+    "title": "LinearRAG의 색인과 검색",
+    "cols": [
+      [
+        "검색 단위",
+        "Entity·sentence·passage의 Tri-Graph"
+      ],
+      [
+        "색인 단계",
+        "관계 술어 추출 대신 개체 출현과 문장·passage 연결을 중심으로 그래프를 구축합니다."
+      ],
+      [
+        "질의 단계",
+        "지역 의미 연결로 단서를 보강하고 전역 그래프 확산으로 passage를 검색합니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "색인 상세: Corpus → Passage + Sentence / Entity mention 추출 / Entity–Sentence–Passage Tri-Graph / Co-occurrence / membership edges 구축 / Relation labels 없이 그래프 저장\n검색 상세: 질문 NER와 entity grounding / 질문–sentence similarity / sentence–entity local bridging + pruning / passage–entity PPR aggregation / 상위 원문 passages로 답변\n공개 구현: https://github.com/DEEP-PolyU/LinearRAG\n실습 한계: LinearRAG의 의미상 핵심은 relation-free Tri-Graph다. Entity-Passage 2부 그래프는 교육용 축소. 관계 추출 품질·토큰 비용을 회피하는 장점과 의미 누락 tradeoff를 함께 전달한다.",
+    "sources": [
+      "https://arxiv.org/abs/2510.10114",
+      "https://github.com/DEEP-PolyU/LinearRAG"
+    ],
+    "lead": "원 논문 메커니즘"
+  },
+  {
+    "title": "LinearRAG의 예시와 구현 범위",
+    "cols": [
+      [
+        "예시 질문",
+        "날씨API를 통해 배차에 영향을 주는 요소는?"
+      ],
+      [
+        "검색할 근거",
+        "개체를 공유하는 문장을 연결하고 최종적으로 원문 passage를 제공합니다."
+      ],
+      [
+        "오류와 비용",
+        "공동 출현이 실제 인과·업무 관계를 보장하지 않습니다. 관계 라벨이 없어도 추출 품질 문제는 남습니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "이 예시 질문은 설명용으로 작성했으며 논문의 벤치마크 성능을 측정한 결과가 아닙니다.\n실제 웹 구현: 추출 triple에서 엔티티 포함관계 재사용 / 엔티티–문서 이분그래프 / query/doc seed PPR / 문서 Top-4\nLinearRAG의 의미상 핵심은 relation-free Tri-Graph다. Entity-Passage 2부 그래프는 교육용 축소. 관계 추출 품질·토큰 비용을 회피하는 장점과 의미 누락 tradeoff를 함께 전달한다.",
+    "sources": [
+      "https://arxiv.org/abs/2510.10114",
+      "https://github.com/DEEP-PolyU/LinearRAG"
+    ],
+    "lead": "설명용 사례. 원 구현 전체 재현과 구분합니다."
+  },
+  {
+    "title": "AtomicRAG의 색인과 검색",
+    "cols": [
+      [
+        "검색 단위",
+        "Self-contained atom과 entity"
+      ],
+      [
+        "색인 단계",
+        "여러 사실을 묶은 chunk를 독립적으로 이해할 수 있는 작은 사실 단위로 나눕니다."
+      ],
+      [
+        "질의 단계",
+        "복잡도에 따라 질문을 분해하고 atom 검색·entity PPR 후 Atomic Sieve로 거릅니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "색인 상세: Document → self-contained knowledge atoms / Atom에서 Entity 추출 / Atom–Entity Graph(AEG) 구축 / Entity–Entity 존재성 edge 연결 / Atom ↔ 원문 provenance 저장\n검색 상세: Query → entity / atom candidates / Entity graph Personalized PageRank / 관련 atom 후보 확장 / Atom sieve / relevance filtering / 선별 atom과 source → LLM\n공개 구현: https://github.com/7HHHHH/AtomicRAG\n실습 한계: AtomicRAG는 relation label 자체보다 독립적 fact text의 의미 보존을 강조한다. Atom Sieve와 PPR의 역할을 구분한다. 사이트는 선별/전파 축소.",
+    "sources": [
+      "https://arxiv.org/abs/2604.20844",
+      "https://github.com/7HHHHH/AtomicRAG"
+    ],
+    "lead": "원 논문 메커니즘"
+  },
+  {
+    "title": "AtomicRAG의 예시와 구현 범위",
+    "cols": [
+      [
+        "예시 질문",
+        "날씨 입력과 배차 결정의 연결은?"
+      ],
+      [
+        "검색할 근거",
+        "필요한 사실 atom들을 조합하고 중복·무관한 atom은 제거합니다."
+      ],
+      [
+        "오류와 비용",
+        "문맥 없는 단편으로 쪼개면 안 됩니다. atom 작성·질의 분해·필터의 오류를 따로 평가해야 합니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "이 예시 질문은 설명용으로 작성했으며 논문의 벤치마크 성능을 측정한 결과가 아닙니다.\n실제 웹 구현: Live LLM facts / Offline 문장 분리 / atom별 동일 질문 점수 계산 / atom Top-5 / graph 전파·sieve 없음\nAtomicRAG는 relation label 자체보다 독립적 fact text의 의미 보존을 강조한다. Atom Sieve와 PPR의 역할을 구분한다. 사이트는 선별/전파 축소.",
+    "sources": [
+      "https://arxiv.org/abs/2604.20844",
+      "https://github.com/7HHHHH/AtomicRAG"
+    ],
+    "lead": "설명용 사례. 원 구현 전체 재현과 구분합니다."
+  },
+  {
+    "title": "MiniRAG의 색인과 검색",
+    "cols": [
+      [
+        "검색 단위",
+        "Entity와 chunk의 이종 그래프"
+      ],
+      [
+        "색인 단계",
+        "작은 모델이 처리할 수 있도록 개체와 chunk 간 연결을 가볍게 구성합니다."
+      ],
+      [
+        "질의 단계",
+        "질문의 개체와 예상 답 유형을 사용하고 topology 기반 경로를 찾습니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "색인 상세: Document → chunk 및 entity / 가벼운 entity extraction / Entity–Entity + Entity–Chunk heterograph / Chunk 의미 및 topology 함께 저장 / 작은 LLM에 적합한 인덱스\n검색 상세: 질문에서 entity/type 단서 추출 / 관련 entity·chunk 후보 검색 / 이질 그래프 topology 기반 탐색 / 후보 경로·chunk 결합 및 제한 / 검색 근거로 SLM/LLM 답변\n공개 구현: https://github.com/HKUDS/MiniRAG\n실습 한계: 원 방식은 entity–chunk 이질 그래프와 topology-enhanced retrieval. 이 데모의 BFS 최단 경로는 설명용 proxy이며 논문 검색식 전체가 아니다.",
+    "sources": [
+      "https://arxiv.org/abs/2501.06713",
+      "https://github.com/HKUDS/MiniRAG"
+    ],
+    "lead": "원 논문 메커니즘"
+  },
+  {
+    "title": "MiniRAG의 예시와 구현 범위",
+    "cols": [
+      [
+        "예시 질문",
+        "날씨API에 의존하는 소프트웨어 이름은?"
+      ],
+      [
+        "검색할 근거",
+        "예상 답 유형에 맞는 노드와 주변 chunk를 짧은 경로로 제공합니다."
+      ],
+      [
+        "오류와 비용",
+        "작은 모델의 추출·타입 판단이 틀릴 수 있습니다. 짧은 BFS만으로 전체 원 알고리즘을 재현하지 않습니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "이 예시 질문은 설명용으로 작성했으며 논문의 벤치마크 성능을 측정한 결과가 아닙니다.\n실제 웹 구현: 엔티티 seed / 무방향 KG에서 BFS / 최대 3-hop 경로 / 관련 문서 Top-3\n원 방식은 entity–chunk 이질 그래프와 topology-enhanced retrieval. 이 데모의 BFS 최단 경로는 설명용 proxy이며 논문 검색식 전체가 아니다.",
+    "sources": [
+      "https://arxiv.org/abs/2501.06713",
+      "https://github.com/HKUDS/MiniRAG"
+    ],
+    "lead": "설명용 사례. 원 구현 전체 재현과 구분합니다."
+  },
+  {
+    "title": "GFM-RAG의 색인과 검색",
+    "cols": [
+      [
+        "검색 단위",
+        "KG와 entity-document 인덱스"
+      ],
+      [
+        "색인 단계",
+        "그래프 텐서와 특징을 준비하고 사전학습한 graph foundation model을 적용합니다."
+      ],
+      [
+        "질의 단계",
+        "질의에 조건화한 GNN message passing으로 개체 관련도를 예측해 문서를 정렬합니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "색인 상세: Raw docs → Entity KG index / KG node / relation / document mapping / Graph tensor/feature preprocessing / Pretrained GFM retriever weights 준비 / 새 corpus graph에 zero-shot 적용\n검색 상세: Query embedding / node grounding / Query-conditioned Graph Neural Network / Graph message passing / node ranking / Relevant passage / document projection / Retrieved context → generator LLM\n공개 구현: https://github.com/RManLuo/gfm-rag\n실습 한계: 핵심은 대규모 사전 학습된 GFM의 zero-shot 일반화. 실제 가중치 없이 고정 message propagation하는 사이트는 learned GNN을 구현하지 않은 proxy.",
+    "sources": [
+      "https://arxiv.org/abs/2502.01113",
+      "https://github.com/RManLuo/gfm-rag"
+    ],
+    "lead": "원 논문 메커니즘"
+  },
+  {
+    "title": "GFM-RAG의 예시와 구현 범위",
+    "cols": [
+      [
+        "예시 질문",
+        "연결된 여러 문서의 답 근거는?"
+      ],
+      [
+        "검색할 근거",
+        "학습 모델이 계산한 노드 점수를 원문 문서 검색에 연결합니다."
+      ],
+      [
+        "오류와 비용",
+        "체크포인트·학습 데이터·그래프 분포가 중요합니다. PPR 규칙과 학습 GNN을 같은 연산으로 표시하면 안 됩니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "이 예시 질문은 설명용으로 작성했으며 논문의 벤치마크 성능을 측정한 결과가 아닙니다.\n실제 웹 구현: 질문–엔티티 초기 점수 / 고정 계수 이웃 평균 2회 / 문서 점수 투영 / 학습 checkpoint 없음\n핵심은 대규모 사전 학습된 GFM의 zero-shot 일반화. 실제 가중치 없이 고정 message propagation하는 사이트는 learned GNN을 구현하지 않은 proxy.",
+    "sources": [
+      "https://arxiv.org/abs/2502.01113",
+      "https://github.com/RManLuo/gfm-rag"
+    ],
+    "lead": "설명용 사례. 원 구현 전체 재현과 구분합니다."
+  },
+  {
+    "title": "G-reasoner의 색인과 검색",
+    "cols": [
+      [
+        "검색 단위",
+        "Attribute·KG·document·community의 QuadGraph"
+      ],
+      [
+        "색인 단계",
+        "서로 다른 지식 구조를 네 종류의 연결된 계층으로 구성합니다."
+      ],
+      [
+        "질의 단계",
+        "통합 그래프 위에서 질의 관련 노드를 예측하고 관련 근거를 선택합니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "색인 상세: Knowledge graph layer 구성 / Document 연결 구성 / Attribute 노드 구성 / Community 계층 연결 / 통합 QuadGraph 저장\n검색 상세: Query embedding / 학습된 GFM의 관계/노드 전파 / 문서 relevance 예측 / 상위 문서 근거 구성 / Language foundation model 답변\n공개 구현: https://github.com/RManLuo/gfm-rag\n실습 한계: QuadGraph는 Community / Document / Knowledge Graph / Attribute 층. 공식 G-reasoner는 학습 GFM을 사용한다. 현재 데모는 층별 휴리스틱 후보 결합이며 GFM이 아니다.",
+    "sources": [
+      "https://arxiv.org/abs/2509.24276",
+      "https://github.com/RManLuo/gfm-rag"
+    ],
+    "lead": "원 논문 메커니즘"
+  },
+  {
+    "title": "G-reasoner의 예시와 구현 범위",
+    "cols": [
+      [
+        "예시 질문",
+        "개체 정보와 전체 주제를 함께 묻는 질문은?"
+      ],
+      [
+        "검색할 근거",
+        "하나의 검색 표현에서 속성·사실·문서·community 근거를 연결합니다."
+      ],
+      [
+        "오류와 비용",
+        "QuadGraph 준비와 원 모델이 필요합니다. 현재 웹 데모에 학습 체크포인트는 포함하지 않습니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "이 예시 질문은 설명용으로 작성했으며 논문의 벤치마크 성능을 측정한 결과가 아닙니다.\n실제 웹 구현: 엔티티 관련성 조회 / 문장 atom Top-2 / 그룹 Top-1·문서 Top-2 / 단일 generator, GFM 없음\nQuadGraph는 Community / Document / Knowledge Graph / Attribute 층. 공식 G-reasoner는 학습 GFM을 사용한다. 현재 데모는 층별 휴리스틱 후보 결합이며 GFM이 아니다.",
+    "sources": [
+      "https://arxiv.org/abs/2509.24276",
+      "https://github.com/RManLuo/gfm-rag"
+    ],
+    "lead": "설명용 사례. 원 구현 전체 재현과 구분합니다."
+  },
+  {
+    "title": "RAG-Anything의 색인과 검색",
+    "cols": [
+      [
+        "검색 단위",
+        "텍스트·표·이미지·수식 단위"
+      ],
+      [
+        "색인 단계",
+        "문서를 파싱해 modality별 내용을 표현하고 교차 modality 구조와 의미 연결을 만듭니다."
+      ],
+      [
+        "질의 단계",
+        "구조적 탐색과 의미 검색을 결합해 관련 artifact와 텍스트를 회수합니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "색인 상세: PDF/Office → MinerU/Docling parsing / Text / Image / Table / Equation 분류 / Modality-aware VLM 캡션·구조화 / Cross-modal entities + relationships / Multimodal KG + LightRAG indices\n검색 상세: Query modality/context 분석 / Entity/relationship hybrid retrieval / Text + table + image aligned recall / Linked multimodal evidence assembling / VLM/LLM generate grounded answer\n공개 구현: https://github.com/HKUDS/RAG-Anything\n실습 한계: 원 프로젝트는 다양한 parser·modality 처리를 지원하지만 데모는 Vision caption을 텍스트로 만들고 검색한다. 표/수식 parser 자체 재현은 아니다.",
+    "sources": [
+      "https://arxiv.org/abs/2510.12323",
+      "https://github.com/HKUDS/RAG-Anything"
+    ],
+    "lead": "원 논문 메커니즘"
+  },
+  {
+    "title": "RAG-Anything의 예시와 구현 범위",
+    "cols": [
+      [
+        "예시 질문",
+        "운영 설명과 성능 표를 함께 보면?"
+      ],
+      [
+        "검색할 근거",
+        "표의 수치와 관련 본문, 필요하면 원본 이미지까지 생성 근거에 전달합니다."
+      ],
+      [
+        "오류와 비용",
+        "파싱·표 구조·시각 인식 오류가 영향을 줍니다. 이미지 캡션 한 줄을 검색하는 데모와 전체 파이프라인은 다릅니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "이 예시 질문은 설명용으로 작성했으며 논문의 벤치마크 성능을 측정한 결과가 아닙니다.\n실제 웹 구현: 업로드 이미지 Vision caption / caption을 문서로 인덱싱 / 이미지 문서 우선+문서 Top-3 / dual graph 없음\n원 프로젝트는 다양한 parser·modality 처리를 지원하지만 데모는 Vision caption을 텍스트로 만들고 검색한다. 표/수식 parser 자체 재현은 아니다.",
+    "sources": [
+      "https://arxiv.org/abs/2510.12323",
+      "https://github.com/HKUDS/RAG-Anything"
+    ],
+    "lead": "설명용 사례. 원 구현 전체 재현과 구분합니다."
+  },
+  {
+    "title": "When to Use Graphs in RAG의 색인과 검색",
+    "cols": [
+      [
+        "검색 단위",
+        "평가 태스크와 코퍼스"
+      ],
+      [
+        "색인 단계",
+        "여러 유형의 질문과 시스템을 같은 평가 조건으로 비교할 준비를 합니다."
+      ],
+      [
+        "질의 단계",
+        "검색·생성 품질과 비용을 태스크별로 측정해 그래프 적용 조건을 분석합니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "색인 상세: GraphRAG-Bench corpus 준비 / 사실/추론/요약 등 태스크 구성 / 동일 조건에서 검색기 비교 / 검색·생성 지표 기록 / 그래프 이득과 비용 분석\n검색 상세: 평가 질문 선택 / 여러 RAG 시스템 실행 / 검색 근거 평가 / 답변 품질·비용 비교 / 태스크별 결과 분석\n공개 구현: https://github.com/GraphRAG-Bench/GraphRAG-Benchmark\n실습 한계: 평가·분석 논문이며 query router 제안이 아니다. 실습의 router는 별도 제작한 휴리스틱이다.",
+    "sources": [
+      "https://arxiv.org/abs/2506.05690",
+      "https://github.com/GraphRAG-Bench/GraphRAG-Benchmark"
+    ],
+    "lead": "원 논문 메커니즘"
+  },
+  {
+    "title": "When to Use Graphs in RAG의 예시와 구현 범위",
+    "cols": [
+      [
+        "예시 질문",
+        "어떤 질문에서 그래프가 도움이 되는가?"
+      ],
+      [
+        "검색할 근거",
+        "단일 사실·다단계 연결·요약 질문을 나눠 baseline 대비 이득을 봅니다."
+      ],
+      [
+        "오류와 비용",
+        "검색 알고리즘이나 자동 router를 제안하는 항목으로 설명하지 않습니다. 웹의 키워드 router는 별도 교육용 코드입니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "이 예시 질문은 설명용으로 작성했으며 논문의 벤치마크 성능을 측정한 결과가 아닙니다.\n실제 웹 구현: 사용자 정의 한국어 키워드 규칙 / global / multihop / factoid 분기 / GraphRAG / HippoRAG2 / baseline 선택 / 논문의 알고리즘 아님\n평가·분석 논문이며 query router 제안이 아니다. 실습의 router는 별도 제작한 휴리스틱이다.",
+    "sources": [
+      "https://arxiv.org/abs/2506.05690",
+      "https://github.com/GraphRAG-Bench/GraphRAG-Benchmark"
+    ],
+    "lead": "설명용 사례. 원 구현 전체 재현과 구분합니다."
+  },
+  {
+    "title": "PPR 검색의 중간 값",
+    "cols": null,
+    "table": null,
+    "code": [
+      [
+        "확산식",
+        "p(t+1) = (1 − α) s + α Pᵀ p(t)\ns: 질문과 연결된 seed 분포\nP: 정규화된 그래프 전이 행렬"
+      ],
+      [
+        "실습에서 읽을 값",
+        "엔티티 후보 점수와 seed 가중치\n반복별 node score와 최종 문서 순위\n선택된 원문 근거와 LLM에 전달한 context"
+      ]
+    ],
+    "notes": "식은 확산 연산을 설명하기 위한 일반 형태입니다. 각 논문과 구현의 seed 구성, edge weight, passage aggregation은 다릅니다. α를 이동 확률로 정의했으며 restart 확률로 쓰는 문헌과 혼동하지 않습니다. 높은 검색 점수는 정답 확률이나 OWL 논리적 함의를 뜻하지 않습니다.",
+    "sources": [
+      "https://arxiv.org/abs/2405.14831",
+      "https://arxiv.org/abs/2502.14802"
+    ],
+    "lead": ""
+  },
+  {
+    "title": "같은 질문에서 비교할 결과",
+    "cols": null,
+    "table": [
+      [
+        "질문 유형",
+        "비교 후보",
+        "평가할 값"
+      ],
+      [
+        "단일 사실",
+        "Vector/Hybrid baseline 대 Graph",
+        "정확한 원문과 인용"
+      ],
+      [
+        "여러 문서 연결",
+        "Baseline 대 PPR 계열",
+        "필요한 supporting facts의 recall"
+      ],
+      [
+        "코퍼스 전체 요약",
+        "Baseline 대 community/hierarchy",
+        "포괄성, 누락, 중복, 원문 근거"
+      ],
+      [
+        "표·이미지 포함",
+        "텍스트 대 multimodal retrieval",
+        "숫자·표 구조·시각 근거 보존"
+      ]
+    ],
+    "code": null,
+    "notes": "이 표는 후보 선정용 설계 제안입니다. 특정 방법이 항상 우수하다는 실험 결론이 아닙니다. 같은 코퍼스, 질문, generator, context budget으로 비교하고 색인 비용과 온라인 비용을 따로 보고합니다.",
+    "sources": [
+      "https://arxiv.org/abs/2506.05690"
+    ],
+    "lead": ""
+  },
+  {
+    "title": "실습 결과의 해석과 한계",
+    "cols": [
+      [
+        "온톨로지 워크숍",
+        "실제 RDF 파싱·OWL RL 추론·SHACL 검증·고정 SPARQL을 실행합니다. LLM 생성과는 독립적입니다."
+      ],
+      [
+        "GraphRAG 방법 데모",
+        "교육용 축소 구현입니다. 원 논문의 클러스터링·학습 모델·질의 분해를 완전 재현하지 않습니다."
+      ],
+      [
+        "실행 기록",
+        "검색 문자열, 추출 후보, 그래프 점수, 선택 근거를 확인합니다. 모델의 비공개 사고 과정은 표시하지 않습니다."
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "학습자는 원 논문 설명과 실제 실행 흐름을 구분해 읽어야 합니다. 연구 성능 비교가 필요하면 각 공식 저장소의 환경과 데이터셋을 재현해야 합니다. 웹의 결과 비교는 데이터 흐름 이해를 위한 실습입니다.",
+    "sources": [
+      "https://github.com/parthsarthi03/raptor",
+      "https://github.com/microsoft/graphrag",
+      "https://github.com/HKUDS/LightRAG",
+      "https://github.com/OSU-NLP-Group/HippoRAG",
+      "https://github.com/OSU-NLP-Group/HippoRAG",
+      "https://github.com/sam234990/ArchRAG",
+      "https://github.com/DEEP-PolyU/LinearRAG",
+      "https://github.com/7HHHHH/AtomicRAG",
+      "https://github.com/HKUDS/MiniRAG",
+      "https://github.com/RManLuo/gfm-rag",
+      "https://github.com/RManLuo/gfm-rag",
+      "https://github.com/HKUDS/RAG-Anything",
+      "https://github.com/GraphRAG-Bench/GraphRAG-Benchmark"
+    ],
+    "lead": ""
+  },
+  {
+    "title": "참고 자료",
+    "cols": [
+      [
+        "개념과 업무 설계",
+        "AI Agent 시대, 기업은 왜 온톨로지가 필요한가\n심경민 · WikiDocs 19432"
+      ],
+      [
+        "연구의 읽기 순서",
+        "GraphRAG의 개념과 최신연구동향\n김우영 · WikiDocs 19813"
+      ],
+      [
+        "기술 근거",
+        "W3C RDF / OWL 2 / SHACL / SPARQL\n각 방법의 arXiv 원문과 공개 구현"
+      ]
+    ],
+    "table": null,
+    "code": null,
+    "notes": "WikiDocs는 학습 순서와 업무 관점의 참고 자료입니다. GraphRAG 교재는 원문 대조 필요성을 명시하므로 기술 설명은 각 논문·공개 구현과 대조했습니다. 표·예제·도식은 본 자료에서 새로 작성했습니다. 각 슬라이드의 발표자 노트에서 원문 링크를 확인할 수 있습니다.",
+    "sources": [
+      "https://wikidocs.net/book/19432",
+      "https://wikidocs.net/book/19813",
+      "https://www.w3.org/TR/rdf11-concepts/",
+      "https://www.w3.org/TR/owl2-primer/",
+      "https://www.w3.org/TR/shacl/",
+      "https://www.w3.org/TR/sparql11-query/"
+    ],
+    "lead": ""
+  },
+  {
+    "title": "RAPTOR 상세 아키텍처",
+    "architecture": "raptor",
+    "lead": "색인 구축과 질의 처리의 단계별 흐름",
+    "notes": "색인: 원문 Chunk + embedding / UMAP 차원축소 / GMM soft clustering / Cluster별 LLM 요약 생성 / Summary를 재임베딩하며 재귀 반복 / Leaf + Summary tree 저장\n검색: 질문 embedding / Tree 전체 또는 level별 similarity 탐색 / Leaf / Summary node 선택 / 다양한 해상도의 근거 병합 / LLM answer + source trace\n실습과 차이: RAPTOR는 엔티티 관계 그래프보다 요약 트리 기반 다중 해상도 검색에 집중한다. soft cluster와 recursive summary의 선택을 설명한다. 사이트는 2-level proxy.",
+    "sources": [
+      "https://arxiv.org/abs/2401.18059",
+      "https://github.com/parthsarthi03/raptor"
+    ]
+  },
+  {
+    "title": "GRAPHRAG 상세 아키텍처",
+    "architecture": "graphrag",
+    "lead": "색인 구축과 질의 처리의 단계별 흐름",
+    "notes": "색인: Corpus → Text units / LLM Entity / Relationship 추출 (Claims 선택) / Entity description / edge 병합 / Leiden 계층 커뮤니티 탐지 / Community Report 생성 + 저장\n검색: Global 질문 → Community Reports / Report별 map-stage 부분 답변 / 중요도 / 품질 점수 지정 / Reduce 단계에서 핵심 근거 종합 / 최종 답변 + report citations\n실습과 차이: 논문은 Global query-focused summarization이 주 문제다. Local search는 entity-neighborhood 및 source passages를 사용한다. 모든 report 대상으로 map reduce하면 비용이 크다. 사이트의 그룹 요약은 Leiden/map-reduce 생략.",
+    "sources": [
+      "https://arxiv.org/abs/2404.16130",
+      "https://github.com/microsoft/graphrag"
+    ]
+  },
+  {
+    "title": "LIGHTRAG 상세 아키텍처",
+    "architecture": "lightrag",
+    "lead": "색인 구축과 질의 처리의 단계별 흐름",
+    "notes": "색인: Chunk 분할 및 고유 ID / LLM 엔티티 / 관계 추출 + dedup / Entity / Relation 설명 병합 / Graph + Vector / KV index 구축 / 신규 문서 증분 업데이트\n검색: Query → low / high keyword 추출 / Low-level entity 벡터 검색 / High-level relation 벡터 검색 / Neighbor expansion + chunk provenance / Hybrid context 정렬 → LLM\n실습과 차이: Low-level은 entity 정보, high-level은 relationship 중심이다. 최근 구현은 hybrid/mix mode 및 reranker 등을 지원한다. 사이트는 dual-level core idea proxy.",
+    "sources": [
+      "https://arxiv.org/abs/2410.05779",
+      "https://github.com/HKUDS/LightRAG"
+    ]
+  },
+  {
+    "title": "HIPPORAG 상세 아키텍처",
+    "architecture": "hipporag",
+    "lead": "색인 구축과 질의 처리의 단계별 흐름",
+    "notes": "색인: Passage 단위 문서 분할 / OpenIE Triple 추출 / Triple 정규화 / 동의어 연결 / Entity KG + Passage mapping 저장 / 비모수 장기기억 인덱스\n검색: Query에서 named-entity / keyphrase seed / KG node grounding / Personalized PageRank 확산 / 높은 score entity → Passage 매핑 / 근거 passage로 단일 LLM 생성\n실습과 차이: PPR은 seed 중심으로 graph 전체에 확률질량을 전파하여 연관 passage를 찾는다. 틀린 triple 한 개가 잘못된 경로를 만들 위험을 언급한다.",
+    "sources": [
+      "https://arxiv.org/abs/2405.14831",
+      "https://github.com/OSU-NLP-Group/HippoRAG"
+    ]
+  },
+  {
+    "title": "HIPPORAG2 상세 아키텍처",
+    "architecture": "hipporag2",
+    "lead": "색인 구축과 질의 처리의 단계별 흐름",
+    "notes": "색인: OpenIE 문서 / phrase 노드 / Phrase–phrase semantic links / Passage node를 graph와 직접 연결 / Passage/phrase embedding 저장 / KG + Passage augmented memory\n검색: 질문–triple 유사도 검색 / 온라인 LLM recognition filtering / 선택 triple의 phrase + passage seed / Passage 통합 graph에서 PPR / 상위 passage로 LLM 답변\n실습과 차이: 원 방식은 query-to-triple retrieval과 온라인 LLM recognition filtering, passage 노드 통합 PPR를 사용한다. 현재 데모는 Top-3 문서의 엔티티 seed 보정과 점수 혼합이며 recognition filtering은 실행하지 않는다.",
+    "sources": [
+      "https://arxiv.org/abs/2502.14802",
+      "https://github.com/OSU-NLP-Group/HippoRAG"
+    ]
+  },
+  {
+    "title": "ARCHRAG 상세 아키텍처",
+    "architecture": "archrag",
+    "lead": "색인 구축과 질의 처리의 단계별 흐름",
+    "notes": "색인: Text Chunk → Entity KG / Node/Edge attribute embeddings / Connectivity + Semantics 기반 attributed communities / Community별 재귀 LLM 요약 / C-HNSW 계층 검색 인덱스\n검색: Query vector → 상위 community / C-HNSW intra / inter-layer 탐색 / Coarse→Fine candidate expansion / Adaptive relevance filtering / Selected summaries + passages → LLM\n실습과 차이: C-HNSW는 원래의 vector ANN hierarchy에서 착안한 community 탐색이다. semantic attribute를 넣어 topology-only community 한계를 줄인다. 사이트에서는 단순 coarse-to-fine selector.",
+    "sources": [
+      "https://arxiv.org/abs/2502.09891",
+      "https://github.com/sam234990/ArchRAG"
+    ]
+  },
+  {
+    "title": "LINEARRAG 상세 아키텍처",
+    "architecture": "linearrag",
+    "lead": "색인 구축과 질의 처리의 단계별 흐름",
+    "notes": "색인: Corpus → Passage + Sentence / Entity mention 추출 / Entity–Sentence–Passage Tri-Graph / Co-occurrence / membership edges 구축 / Relation labels 없이 그래프 저장\n검색: 질문 NER와 entity grounding / 질문–sentence similarity / sentence–entity local bridging + pruning / passage–entity PPR aggregation / 상위 원문 passages로 답변\n실습과 차이: LinearRAG의 의미상 핵심은 relation-free Tri-Graph다. Entity-Passage 2부 그래프는 교육용 축소. 관계 추출 품질·토큰 비용을 회피하는 장점과 의미 누락 tradeoff를 함께 전달한다.",
+    "sources": [
+      "https://arxiv.org/abs/2510.10114",
+      "https://github.com/DEEP-PolyU/LinearRAG"
+    ]
+  },
+  {
+    "title": "ATOMICRAG 상세 아키텍처",
+    "architecture": "atomicrag",
+    "lead": "색인 구축과 질의 처리의 단계별 흐름",
+    "notes": "색인: Document → self-contained knowledge atoms / Atom에서 Entity 추출 / Atom–Entity Graph(AEG) 구축 / Entity–Entity 존재성 edge 연결 / Atom ↔ 원문 provenance 저장\n검색: Query → entity / atom candidates / Entity graph Personalized PageRank / 관련 atom 후보 확장 / Atom sieve / relevance filtering / 선별 atom과 source → LLM\n실습과 차이: AtomicRAG는 relation label 자체보다 독립적 fact text의 의미 보존을 강조한다. Atom Sieve와 PPR의 역할을 구분한다. 사이트는 선별/전파 축소.",
+    "sources": [
+      "https://arxiv.org/abs/2604.20844",
+      "https://github.com/7HHHHH/AtomicRAG"
+    ]
+  },
+  {
+    "title": "MINIRAG 상세 아키텍처",
+    "architecture": "minirag",
+    "lead": "색인 구축과 질의 처리의 단계별 흐름",
+    "notes": "색인: Document → chunk 및 entity / 가벼운 entity extraction / Entity–Entity + Entity–Chunk heterograph / Chunk 의미 및 topology 함께 저장 / 작은 LLM에 적합한 인덱스\n검색: 질문에서 entity/type 단서 추출 / 관련 entity·chunk 후보 검색 / 이질 그래프 topology 기반 탐색 / 후보 경로·chunk 결합 및 제한 / 검색 근거로 SLM/LLM 답변\n실습과 차이: 원 방식은 entity–chunk 이질 그래프와 topology-enhanced retrieval. 이 데모의 BFS 최단 경로는 설명용 proxy이며 논문 검색식 전체가 아니다.",
+    "sources": [
+      "https://arxiv.org/abs/2501.06713",
+      "https://github.com/HKUDS/MiniRAG"
+    ]
+  },
+  {
+    "title": "GFMRAG 상세 아키텍처",
+    "architecture": "gfmrag",
+    "lead": "색인 구축과 질의 처리의 단계별 흐름",
+    "notes": "색인: Raw docs → Entity KG index / KG node / relation / document mapping / Graph tensor/feature preprocessing / Pretrained GFM retriever weights 준비 / 새 corpus graph에 zero-shot 적용\n검색: Query embedding / node grounding / Query-conditioned Graph Neural Network / Graph message passing / node ranking / Relevant passage / document projection / Retrieved context → generator LLM\n실습과 차이: 핵심은 대규모 사전 학습된 GFM의 zero-shot 일반화. 실제 가중치 없이 고정 message propagation하는 사이트는 learned GNN을 구현하지 않은 proxy.",
+    "sources": [
+      "https://arxiv.org/abs/2502.01113",
+      "https://github.com/RManLuo/gfm-rag"
+    ]
+  },
+  {
+    "title": "GREASONER 상세 아키텍처",
+    "architecture": "greasoner",
+    "lead": "색인 구축과 질의 처리의 단계별 흐름",
+    "notes": "색인: Knowledge graph layer 구성 / Document 연결 구성 / Attribute 노드 구성 / Community 계층 연결 / 통합 QuadGraph 저장\n검색: Query embedding / 학습된 GFM의 관계/노드 전파 / 문서 relevance 예측 / 상위 문서 근거 구성 / Language foundation model 답변\n실습과 차이: QuadGraph는 Community / Document / Knowledge Graph / Attribute 층. 공식 G-reasoner는 학습 GFM을 사용한다. 현재 데모는 층별 휴리스틱 후보 결합이며 GFM이 아니다.",
+    "sources": [
+      "https://arxiv.org/abs/2509.24276",
+      "https://github.com/RManLuo/gfm-rag"
+    ]
+  },
+  {
+    "title": "RAGANYTHING 상세 아키텍처",
+    "architecture": "raganything",
+    "lead": "색인 구축과 질의 처리의 단계별 흐름",
+    "notes": "색인: PDF/Office → MinerU/Docling parsing / Text / Image / Table / Equation 분류 / Modality-aware VLM 캡션·구조화 / Cross-modal entities + relationships / Multimodal KG + LightRAG indices\n검색: Query modality/context 분석 / Entity/relationship hybrid retrieval / Text + table + image aligned recall / Linked multimodal evidence assembling / VLM/LLM generate grounded answer\n실습과 차이: 원 프로젝트는 다양한 parser·modality 처리를 지원하지만 데모는 Vision caption을 텍스트로 만들고 검색한다. 표/수식 parser 자체 재현은 아니다.",
+    "sources": [
+      "https://arxiv.org/abs/2510.12323",
+      "https://github.com/HKUDS/RAG-Anything"
+    ]
+  },
+  {
+    "title": "WHENUSE 상세 아키텍처",
+    "architecture": "whenuse",
+    "lead": "색인 구축과 질의 처리의 단계별 흐름",
+    "notes": "색인: GraphRAG-Bench corpus 준비 / 사실/추론/요약 등 태스크 구성 / 동일 조건에서 검색기 비교 / 검색·생성 지표 기록 / 그래프 이득과 비용 분석\n검색: 평가 질문 선택 / 여러 RAG 시스템 실행 / 검색 근거 평가 / 답변 품질·비용 비교 / 태스크별 결과 분석\n실습과 차이: 평가·분석 논문이며 query router 제안이 아니다. 실습의 router는 별도 제작한 휴리스틱이다.",
+    "sources": [
+      "https://arxiv.org/abs/2506.05690",
+      "https://github.com/GraphRAG-Bench/GraphRAG-Benchmark"
+    ]
+  }
+]

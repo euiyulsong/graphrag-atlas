@@ -72,7 +72,7 @@ def home():
 
 @app.get('/api/health')
 def health():
-    return {'ok': True}
+    return {'ok': True, 'version':'ontology-workshop-2026-10-26'}
 
 @app.get('/api/download/slides')
 def download_slides():
@@ -84,7 +84,7 @@ def download_slides():
 
 @app.get('/api/bootstrap')
 def bootstrap():
-    return {'methods':METHODS,'research':RESEARCH,'documents':DEFAULT_DOCS,'questions':SAMPLE_QUESTIONS,
+    return {'methods':METHODS,'research':RESEARCH,'workshop':json.loads((ROOT/'workshop.json').read_text()),'documents':DEFAULT_DOCS,'questions':SAMPLE_QUESTIONS,
             'live_available':bool(os.getenv('OPENAI_API_KEY','').strip()),
             'models':{'chat':os.getenv('OPENAI_CHAT_MODEL','gpt-6-luna'),
                       'embedding':os.getenv('OPENAI_EMBED_MODEL','text-embedding-3-small')},
@@ -162,16 +162,19 @@ if __name__=='__main__':
 
 @app.get('/api/ontology/example')
 def ontology_example():
-    from ontology_lab import DATA,SHAPES,QUERY
-    return {'data':DATA,'shapes':SHAPES,'query':QUERY}
+    from ontology_lab import DATA,SHAPES,QUERY,SCHEMA,FACTS,QUERIES,lessons
+    return {'data':DATA,'shapes':SHAPES,'query':QUERY,'schema':SCHEMA,'facts':FACTS,'queries':QUERIES,'lessons':lessons()}
 
 class OntologyRequest(BaseModel):
-    data: str = Field(max_length=18000)
+    data: str = Field(default="",max_length=18000)
+    schema_text: str|None = Field(default=None,alias="schema",max_length=12000)
+    facts: str|None = Field(default=None,max_length=12000)
+    query_id: str = "systems"
     shapes: str = Field(max_length=12000)
     infer: bool = True
 
 @app.post('/api/ontology/run')
 def ontology_run(payload:OntologyRequest):
     from ontology_lab import run_ontology
-    try: return run_ontology(payload.data,payload.shapes,payload.infer)
+    try: return run_ontology(payload.data,payload.shapes,payload.infer,payload.query_id,payload.schema_text,payload.facts)
     except Exception as exc: raise HTTPException(400,str(exc)[:240]) from exc

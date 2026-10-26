@@ -142,7 +142,7 @@ def test_presentation_download_and_presenter_notes():
     assert response.status_code==200
     assert response.content[:2]==b'PK'
     deck=Presentation(BytesIO(response.content))
-    assert len(deck.slides)==33
+    assert len(deck.slides)==60
     assert all(s.notes_slide.notes_text_frame.text.strip() for s in deck.slides)
     assert client.get('/api/health').json()['ok']
 

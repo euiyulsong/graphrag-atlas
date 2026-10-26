@@ -2,10 +2,24 @@
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
+ex:Company a owl:Class .
 ex:SoftwareSystem a owl:Class .
 ex:PredictionModel a owl:Class ; rdfs:subClassOf ex:SoftwareSystem .
-ex:Company a owl:Class .
-ex:uses a owl:ObjectProperty ; rdfs:domain ex:Company ; rdfs:range ex:SoftwareSystem .
-ex:uses owl:inverseOf ex:usedBy .
-ex:배송예측모델 a ex:PredictionModel .
-ex:고객물류사 a ex:Company ; ex:uses ex:배송예측모델 .
+ex:uses a owl:ObjectProperty ; owl:inverseOf ex:usedBy .
+ex:dependsOn a owl:ObjectProperty, owl:TransitiveProperty .
+ex:Document a owl:Class .
+ex:describes a owl:ObjectProperty .
+ex:text a owl:DatatypeProperty .
+
+@prefix ex: <https://example.org/logistics/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+ex:물류사 a ex:Company ; ex:uses ex:배차시스템 .
+ex:배차시스템 a ex:SoftwareSystem ; ex:dependsOn ex:도착예측모델 .
+ex:도착예측모델 a ex:PredictionModel ; ex:dependsOn ex:날씨API .
+ex:날씨API a ex:SoftwareSystem .
+ex:운영문서 a ex:Document ; ex:describes ex:배차시스템 ;
+  ex:text "배차시스템은 도착예측모델의 결과로 배차 순서를 정한다." .
+ex:모델문서 a ex:Document ; ex:describes ex:도착예측모델 ;
+  ex:text "도착예측모델은 날씨API의 강수량을 입력으로 사용한다." .

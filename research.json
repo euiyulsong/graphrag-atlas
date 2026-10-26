@@ -19,7 +19,7 @@
     ],
     "example": "배송 시스템 전체 전략과 특정 성과 수치를 한 번에 묻기",
     "note": "RAPTOR는 엔티티 관계 그래프보다 요약 트리 기반 다중 해상도 검색에 집중한다. soft cluster와 recursive summary의 선택을 설명한다. 사이트는 2-level proxy.",
-    "reviewed": "2026-10-21",
+    "reviewed": "2026-10-26",
     "implemented": [
       "topic/lexical 문서 그룹",
       "문장 발췌로 2-level summary",
@@ -27,7 +27,13 @@
       "그룹·원문 결합"
     ],
     "status": "교육용 축소 구현",
-    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님."
+    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님.",
+    "unit": "Chunk와 요약 노드",
+    "mechanism_build": "문서 임베딩을 군집화하고 군집 요약을 재귀적으로 올려 여러 추상화 수준을 만듭니다.",
+    "mechanism_query": "질문과 모든 레벨의 노드를 비교하거나 트리를 단계적으로 내려갑니다.",
+    "worked_question": "배차 운영 전반의 변화는?",
+    "worked_evidence": "상위 운영 요약을 찾고 구체적 근거는 하위 원문으로 확인합니다.",
+    "pitfall": "요약 손실이 누적될 수 있습니다. 트리는 관계 술어를 가진 OWL KG가 아닙니다."
   },
   {
     "id": "graphrag",
@@ -49,7 +55,7 @@
     ],
     "example": "2026년 기술 전략의 공통 주제 3가지는?",
     "note": "논문은 Global query-focused summarization이 주 문제다. Local search는 entity-neighborhood 및 source passages를 사용한다. 모든 report 대상으로 map reduce하면 비용이 크다. 사이트의 그룹 요약은 Leiden/map-reduce 생략.",
-    "reviewed": "2026-10-21",
+    "reviewed": "2026-10-26",
     "implemented": [
       "topic/lexical 그룹",
       "문장 발췌 보고서",
@@ -57,7 +63,13 @@
       "단일 generator 합성"
     ],
     "status": "교육용 축소 구현",
-    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님."
+    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님.",
+    "unit": "Entity KG와 community report",
+    "mechanism_build": "LLM이 개체와 관계를 추출하고 community 계층별 보고서를 작성합니다.",
+    "mechanism_query": "Global은 보고서별 부분 응답을 만든 뒤 합칩니다. Local은 특정 개체 주변 근거를 모읍니다.",
+    "worked_question": "전체 운영 문서의 공통 위험은?",
+    "worked_evidence": "여러 community의 부분 답변을 합쳐 코퍼스 수준 주제를 설명합니다.",
+    "pitfall": "전체 색인과 요약 비용이 듭니다. Global 요약은 개별 수치의 원문 확인을 대신하지 않습니다."
   },
   {
     "id": "lightrag",
@@ -79,7 +91,7 @@
     ],
     "example": "TrafficStream, Orion, Beacon의 관계를 묻기",
     "note": "Low-level은 entity 정보, high-level은 relationship 중심이다. 최근 구현은 hybrid/mix mode 및 reranker 등을 지원한다. 사이트는 dual-level core idea proxy.",
-    "reviewed": "2026-10-21",
+    "reviewed": "2026-10-26",
     "implemented": [
       "인덱스 엔티티 유사도",
       "seed 인접 triple 선택",
@@ -87,7 +99,13 @@
       "문서 Top-4"
     ],
     "status": "교육용 축소 구현",
-    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님."
+    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님.",
+    "unit": "Entity·relation profile과 chunk",
+    "mechanism_build": "추출 결과를 병합하고 그래프와 벡터·키값 저장소에 원문 출처를 연결합니다.",
+    "mechanism_query": "Low-level 키워드로 개체, high-level 키워드로 관계를 찾고 근거를 합칩니다.",
+    "worked_question": "배차시스템이 예측모델을 사용하는 이유는?",
+    "worked_evidence": "개체 설명과 관련 관계, 해당 chunk를 함께 제공합니다.",
+    "pitfall": "키워드와 관계 추출 오류가 검색에 영향을 줍니다. MS Global map-reduce와 다른 방식입니다."
   },
   {
     "id": "hipporag",
@@ -109,7 +127,7 @@
     ],
     "example": "TrafficStream부터 고객사 지연 감소까지 multi-hop 경로",
     "note": "PPR은 seed 중심으로 graph 전체에 확률질량을 전파하여 연관 passage를 찾는다. 틀린 triple 한 개가 잘못된 경로를 만들 위험을 언급한다.",
-    "reviewed": "2026-10-21",
+    "reviewed": "2026-10-26",
     "implemented": [
       "인덱스 엔티티 grounding",
       "무방향 KG",
@@ -117,7 +135,13 @@
       "엔티티 점수를 문서로 투영"
     ],
     "status": "교육용 축소 구현",
-    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님."
+    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님.",
+    "unit": "Entity KG와 passage 매핑",
+    "mechanism_build": "OpenIE 트리플로 그래프를 만들고 개체와 원문 passage의 연결을 저장합니다.",
+    "mechanism_query": "질의 엔티티를 seed로 정렬하고 PPR 확산 점수를 passage 순위로 옮깁니다.",
+    "worked_question": "날씨 정보를 사용하는 시스템을 쓰는 회사는?",
+    "worked_evidence": "직접 비슷하지 않은 문서도 연결 개체를 통해 근거 후보가 됩니다.",
+    "pitfall": "허브 노드·잘못된 관계가 점수를 퍼뜨립니다. PPR은 사실의 진실 확률이 아닙니다."
   },
   {
     "id": "hipporag2",
@@ -139,7 +163,7 @@
     ],
     "example": "직접 사실 검색과 2~3 hop 질문을 같은 시스템으로",
     "note": "원 방식은 query-to-triple retrieval과 온라인 LLM recognition filtering, passage 노드 통합 PPR를 사용한다. 현재 데모는 Top-3 문서의 엔티티 seed 보정과 점수 혼합이며 recognition filtering은 실행하지 않는다.",
-    "reviewed": "2026-10-21",
+    "reviewed": "2026-10-26",
     "implemented": [
       "문서 Top-3 검색",
       "관련 엔티티 seed 가산",
@@ -147,7 +171,13 @@
       "문서 점수와 가중 결합"
     ],
     "status": "교육용 축소 구현",
-    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님."
+    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님.",
+    "unit": "Phrase와 passage를 통합한 그래프",
+    "mechanism_build": "원문 passage를 그래프에 직접 통합해 개념 연결과 문맥을 함께 보존합니다.",
+    "mechanism_query": "질문 관련 트리플 검색 후 LLM recognition memory로 걸러 PPR의 시작 신호를 구성합니다.",
+    "worked_question": "어느 회사가 날씨 기반 배차를 하는가?",
+    "worked_evidence": "관련 트리플과 passage 신호를 함께 사용해 연결 근거를 찾습니다.",
+    "pitfall": "온라인 LLM 필터 비용과 오판 가능성이 있습니다. 단순 PPR 한 번만으로 원 방법을 재현하지 못합니다."
   },
   {
     "id": "archrag",
@@ -169,7 +199,7 @@
     ],
     "example": "넓은 조직 전략과 구체적인 팀 정책을 함께 탐색",
     "note": "C-HNSW는 원래의 vector ANN hierarchy에서 착안한 community 탐색이다. semantic attribute를 넣어 topology-only community 한계를 줄인다. 사이트에서는 단순 coarse-to-fine selector.",
-    "reviewed": "2026-10-21",
+    "reviewed": "2026-10-26",
     "implemented": [
       "topic/lexical 1-level 그룹",
       "유사 그룹 Top-2",
@@ -177,7 +207,13 @@
       "요약·원문 결합"
     ],
     "status": "교육용 축소 구현",
-    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님."
+    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님.",
+    "unit": "속성을 반영한 community 계층",
+    "mechanism_build": "연결 구조와 의미 속성을 함께 반영하는 계층적 community를 구성합니다.",
+    "mechanism_query": "C-HNSW 계층 검색과 분석 과정을 통해 관련 community의 범위를 제어합니다.",
+    "worked_question": "날씨 관련 운영 이슈를 요약하면?",
+    "worked_evidence": "전체 보고서를 모두 읽기보다 관련 community를 좁혀 근거로 사용합니다.",
+    "pitfall": "계층 구축·인덱스 유지 비용이 있습니다. 단순 topic 그룹은 attributed clustering의 대체물이 아닙니다."
   },
   {
     "id": "linearrag",
@@ -199,7 +235,7 @@
     ],
     "example": "엔티티 경로를 찾되 부정 관계를 왜곡하지 않기",
     "note": "LinearRAG의 의미상 핵심은 relation-free Tri-Graph다. Entity-Passage 2부 그래프는 교육용 축소. 관계 추출 품질·토큰 비용을 회피하는 장점과 의미 누락 tradeoff를 함께 전달한다.",
-    "reviewed": "2026-10-21",
+    "reviewed": "2026-10-26",
     "implemented": [
       "추출 triple에서 엔티티 포함관계 재사용",
       "엔티티–문서 이분그래프",
@@ -207,7 +243,13 @@
       "문서 Top-4"
     ],
     "status": "교육용 축소 구현",
-    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님."
+    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님.",
+    "unit": "Entity·sentence·passage의 Tri-Graph",
+    "mechanism_build": "관계 술어 추출 대신 개체 출현과 문장·passage 연결을 중심으로 그래프를 구축합니다.",
+    "mechanism_query": "지역 의미 연결로 단서를 보강하고 전역 그래프 확산으로 passage를 검색합니다.",
+    "worked_question": "날씨API를 통해 배차에 영향을 주는 요소는?",
+    "worked_evidence": "개체를 공유하는 문장을 연결하고 최종적으로 원문 passage를 제공합니다.",
+    "pitfall": "공동 출현이 실제 인과·업무 관계를 보장하지 않습니다. 관계 라벨이 없어도 추출 품질 문제는 남습니다."
   },
   {
     "id": "atomicrag",
@@ -229,7 +271,7 @@
     ],
     "example": "하나의 긴 문서 속 여러 사실 중 MAE 수치만 찾기",
     "note": "AtomicRAG는 relation label 자체보다 독립적 fact text의 의미 보존을 강조한다. Atom Sieve와 PPR의 역할을 구분한다. 사이트는 선별/전파 축소.",
-    "reviewed": "2026-10-21",
+    "reviewed": "2026-10-26",
     "implemented": [
       "Live LLM facts / Offline 문장 분리",
       "atom별 동일 질문 점수 계산",
@@ -237,7 +279,13 @@
       "graph 전파·sieve 없음"
     ],
     "status": "교육용 축소 구현",
-    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님."
+    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님.",
+    "unit": "Self-contained atom과 entity",
+    "mechanism_build": "여러 사실을 묶은 chunk를 독립적으로 이해할 수 있는 작은 사실 단위로 나눕니다.",
+    "mechanism_query": "복잡도에 따라 질문을 분해하고 atom 검색·entity PPR 후 Atomic Sieve로 거릅니다.",
+    "worked_question": "날씨 입력과 배차 결정의 연결은?",
+    "worked_evidence": "필요한 사실 atom들을 조합하고 중복·무관한 atom은 제거합니다.",
+    "pitfall": "문맥 없는 단편으로 쪼개면 안 됩니다. atom 작성·질의 분해·필터의 오류를 따로 평가해야 합니다."
   },
   {
     "id": "minirag",
@@ -259,7 +307,7 @@
     ],
     "example": "저자원 환경에서 2-hop 연결 근거를 검색",
     "note": "원 방식은 entity–chunk 이질 그래프와 topology-enhanced retrieval. 이 데모의 BFS 최단 경로는 설명용 proxy이며 논문 검색식 전체가 아니다.",
-    "reviewed": "2026-10-21",
+    "reviewed": "2026-10-26",
     "implemented": [
       "엔티티 seed",
       "무방향 KG에서 BFS",
@@ -267,7 +315,13 @@
       "관련 문서 Top-3"
     ],
     "status": "교육용 축소 구현",
-    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님."
+    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님.",
+    "unit": "Entity와 chunk의 이종 그래프",
+    "mechanism_build": "작은 모델이 처리할 수 있도록 개체와 chunk 간 연결을 가볍게 구성합니다.",
+    "mechanism_query": "질문의 개체와 예상 답 유형을 사용하고 topology 기반 경로를 찾습니다.",
+    "worked_question": "날씨API에 의존하는 소프트웨어 이름은?",
+    "worked_evidence": "예상 답 유형에 맞는 노드와 주변 chunk를 짧은 경로로 제공합니다.",
+    "pitfall": "작은 모델의 추출·타입 판단이 틀릴 수 있습니다. 짧은 BFS만으로 전체 원 알고리즘을 재현하지 않습니다."
   },
   {
     "id": "gfmrag",
@@ -289,7 +343,7 @@
     ],
     "example": "새로운 지식 그래프에서 별도 튜닝 없이 검색하기",
     "note": "핵심은 대규모 사전 학습된 GFM의 zero-shot 일반화. 실제 가중치 없이 고정 message propagation하는 사이트는 learned GNN을 구현하지 않은 proxy.",
-    "reviewed": "2026-10-21",
+    "reviewed": "2026-10-26",
     "implemented": [
       "질문–엔티티 초기 점수",
       "고정 계수 이웃 평균 2회",
@@ -297,7 +351,13 @@
       "학습 checkpoint 없음"
     ],
     "status": "교육용 축소 구현",
-    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님."
+    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님.",
+    "unit": "KG와 entity-document 인덱스",
+    "mechanism_build": "그래프 텐서와 특징을 준비하고 사전학습한 graph foundation model을 적용합니다.",
+    "mechanism_query": "질의에 조건화한 GNN message passing으로 개체 관련도를 예측해 문서를 정렬합니다.",
+    "worked_question": "연결된 여러 문서의 답 근거는?",
+    "worked_evidence": "학습 모델이 계산한 노드 점수를 원문 문서 검색에 연결합니다.",
+    "pitfall": "체크포인트·학습 데이터·그래프 분포가 중요합니다. PPR 규칙과 학습 GNN을 같은 연산으로 표시하면 안 됩니다."
   },
   {
     "id": "greasoner",
@@ -319,7 +379,7 @@
     ],
     "example": "엔티티·속성·문서·커뮤니티를 같이 탐색",
     "note": "QuadGraph는 Community / Document / Knowledge Graph / Attribute 층. 공식 G-reasoner는 학습 GFM을 사용한다. 현재 데모는 층별 휴리스틱 후보 결합이며 GFM이 아니다.",
-    "reviewed": "2026-10-21",
+    "reviewed": "2026-10-26",
     "implemented": [
       "엔티티 관련성 조회",
       "문장 atom Top-2",
@@ -327,7 +387,13 @@
       "단일 generator, GFM 없음"
     ],
     "status": "교육용 축소 구현",
-    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님."
+    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님.",
+    "unit": "Attribute·KG·document·community의 QuadGraph",
+    "mechanism_build": "서로 다른 지식 구조를 네 종류의 연결된 계층으로 구성합니다.",
+    "mechanism_query": "통합 그래프 위에서 질의 관련 노드를 예측하고 관련 근거를 선택합니다.",
+    "worked_question": "개체 정보와 전체 주제를 함께 묻는 질문은?",
+    "worked_evidence": "하나의 검색 표현에서 속성·사실·문서·community 근거를 연결합니다.",
+    "pitfall": "QuadGraph 준비와 원 모델이 필요합니다. 현재 웹 데모에 학습 체크포인트는 포함하지 않습니다."
   },
   {
     "id": "raganything",
@@ -349,7 +415,7 @@
     ],
     "example": "아키텍처 이미지의 화살표 + 운영 문서 사실을 통합",
     "note": "원 프로젝트는 다양한 parser·modality 처리를 지원하지만 데모는 Vision caption을 텍스트로 만들고 검색한다. 표/수식 parser 자체 재현은 아니다.",
-    "reviewed": "2026-10-21",
+    "reviewed": "2026-10-26",
     "implemented": [
       "업로드 이미지 Vision caption",
       "caption을 문서로 인덱싱",
@@ -357,7 +423,13 @@
       "dual graph 없음"
     ],
     "status": "교육용 축소 구현",
-    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님."
+    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님.",
+    "unit": "텍스트·표·이미지·수식 단위",
+    "mechanism_build": "문서를 파싱해 modality별 내용을 표현하고 교차 modality 구조와 의미 연결을 만듭니다.",
+    "mechanism_query": "구조적 탐색과 의미 검색을 결합해 관련 artifact와 텍스트를 회수합니다.",
+    "worked_question": "운영 설명과 성능 표를 함께 보면?",
+    "worked_evidence": "표의 수치와 관련 본문, 필요하면 원본 이미지까지 생성 근거에 전달합니다.",
+    "pitfall": "파싱·표 구조·시각 인식 오류가 영향을 줍니다. 이미지 캡션 한 줄을 검색하는 데모와 전체 파이프라인은 다릅니다."
   },
   {
     "id": "whenuse",
@@ -379,7 +451,7 @@
     ],
     "example": "어떤 QA 유형에서 그래프 도입 가치가 있는가?",
     "note": "평가·분석 논문이며 query router 제안이 아니다. 실습의 router는 별도 제작한 휴리스틱이다.",
-    "reviewed": "2026-10-21",
+    "reviewed": "2026-10-26",
     "implemented": [
       "사용자 정의 한국어 키워드 규칙",
       "global / multihop / factoid 분기",
@@ -387,6 +459,12 @@
       "논문의 알고리즘 아님"
     ],
     "status": "교육용 축소 구현",
-    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님."
+    "source_scope": "논문 및 공식 저장소 README와 대조. 원 구현 전체 재현이 아님.",
+    "unit": "평가 태스크와 코퍼스",
+    "mechanism_build": "여러 유형의 질문과 시스템을 같은 평가 조건으로 비교할 준비를 합니다.",
+    "mechanism_query": "검색·생성 품질과 비용을 태스크별로 측정해 그래프 적용 조건을 분석합니다.",
+    "worked_question": "어떤 질문에서 그래프가 도움이 되는가?",
+    "worked_evidence": "단일 사실·다단계 연결·요약 질문을 나눠 baseline 대비 이득을 봅니다.",
+    "pitfall": "검색 알고리즘이나 자동 router를 제안하는 항목으로 설명하지 않습니다. 웹의 키워드 router는 별도 교육용 코드입니다."
   }
 ]

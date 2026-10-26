@@ -1,5 +1,5 @@
 @prefix ex: <https://example.org/logistics/> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 ex:CompanyShape a sh:NodeShape ; sh:targetClass ex:Company ;
-  sh:property [ sh:path ex:uses ; sh:minCount 1 ; sh:nodeKind sh:IRI ;
-                sh:class ex:SoftwareSystem ] .
+ sh:property [ sh:path ex:uses ; sh:minCount 1 ; sh:nodeKind sh:IRI ; sh:class ex:SoftwareSystem ;
+ sh:message "회사는 SoftwareSystem 개체를 하나 이상 사용해야 합니다." ] .
