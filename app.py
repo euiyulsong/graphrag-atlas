@@ -54,7 +54,7 @@ def home():
 
 @app.get('/api/health')
 def health():
-    return {'ok': True, 'version':'compact-public-2026-10-27'}
+    return {'ok': True, 'version':'when-to-use-2026-10-27'}
 
 @app.get('/api/download/slides')
 def download_slides():
