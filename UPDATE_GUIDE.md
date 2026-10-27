@@ -31,3 +31,7 @@ Slide 13 now shows the actual describes and text facts, the inferred system resu
 ## Ontology focus and error explanations
 
 Each lesson now distinguishes comparison exercises from deliberately broken data. Schema, facts and SHACL show selected lines from the current input with token highlights and line numbers. Full editors are expandable. The inference setting is prominent near the lesson goal. Result summaries use actual query rows and SHACL violations, and warn when input has changed since the last run.
+
+## Search-object visualization
+
+Retrieval results now expose a typed graph containing the actual selected summaries, atoms, documents, uploaded-image sources and entity focus, with stored provenance links. Final evidence and computational focus are distinguished. Nodes open full source text. PPR frames update the graph brightness and focus using actual iteration scores; final-evidence outlines stay fixed. Entity/document ID collisions are isolated by typed IDs. Unavailable image content and educational approximations remain explicit.

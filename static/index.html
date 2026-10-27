@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <meta name="theme-color" content="#07111b"/>
   <title>GraphRAG Atlas — Interactive Research Seminar</title>
-  <link rel="stylesheet" href="/static/styles.css?v=20261027-ontology-focus"/>
+  <link rel="stylesheet" href="/static/styles.css?v=20261027-search-objects"/>
 </head>
 <body>
 <div class="ambient"></div>
@@ -77,7 +77,7 @@
           <button class="btn btn-primary full ask-btn" id="askBtn">검색·답변 실행 <span>↗</span></button><p class="control-hint right-hint">Live는 OpenAI 인덱싱·임베딩·답변 생성 API를 호출합니다. 사용량에 따라 요금이 발생합니다.</p>
           <div class="control-divider"></div><span class="overline">04 — HEAD-TO-HEAD</span><h3 class="subhead">방법별 결과 비교</h3><div class="compare-inputs"><select class="select-input" id="compareA" aria-label="비교 방식 1"></select><span>VS</span><select class="select-input" id="compareB" aria-label="비교 방식 2"></select></div><button id="compareBtn" class="btn btn-outline full">두 방법 비교 ↔</button>
         </div>
-        <div class="lab-output"><div class="output-head"><div><span class="overline">OUTPUT / EXPLAINABILITY</span><h3>Retrieval trace</h3></div><span class="output-pill" id="outputPill">AWAITING QUERY</span></div><div class="viz-tabs"><button class="viz-tab active" data-viz="graph">Knowledge Graph</button><button class="viz-tab" data-viz="trace">Execution trace</button></div><div id="graphPane" class="viz-pane"><div id="graphCanvas" class="graph-canvas"><div class="empty-viz"><span>◉</span><p>지식 그래프 구성 중...</p></div></div><div class="graph-legend"><span><i class="legend-node"></i> Entity</span><span><i class="legend-node hot"></i> Activated</span><span>선을 누르면 relation 확인</span></div></div><div id="tracePane" class="viz-pane" hidden><div id="traceList" class="trace-list"><div class="trace-placeholder">질문을 실행하면 단계별 검색 흐름이 여기에 표시됩니다.</div></div></div>
+        <div class="lab-output"><div class="output-head"><div><span class="overline">OUTPUT / EXPLAINABILITY</span><h3>Retrieval trace</h3></div><span class="output-pill" id="outputPill">AWAITING QUERY</span></div><div class="viz-tabs"><button class="viz-tab active" data-viz="graph">Knowledge Graph</button><button class="viz-tab" data-viz="trace">Execution trace</button></div><div id="graphPane" class="viz-pane"><p id="graphObjectStatus" class="graph-object-status" aria-live="polite">질문을 실행하면 실제 선택된 검색 객체를 표시합니다.</p><p class="graph-scroll-hint">그래프는 가로·세로로 스크롤할 수 있습니다. 노드를 누르면 아래에서 본문을 읽을 수 있습니다.</p><div id="graphCanvas" class="graph-canvas"><div class="empty-viz"><span>◉</span><p>지식 그래프 구성 중...</p></div></div><div id="graphObjectLegend" class="graph-legend object-legend"></div><div id="graphObjectDetails" class="graph-object-details" aria-live="polite" hidden></div></div><div id="tracePane" class="viz-pane" hidden><div id="traceList" class="trace-list"><div class="trace-placeholder">질문을 실행하면 단계별 검색 흐름이 여기에 표시됩니다.</div></div></div>
           <div class="response-area"><div class="result-label"><span>01 / SYNTHESIZED ANSWER</span><span id="streamIndicator" class="stream-indicator">● READY</span><span id="answerTime">—</span></div><div id="answerBox" class="answer-box"><p class="empty-answer">왼쪽에서 실험할 방법과 질문을 선택하고 <b>검색·답변 실행</b>을 클릭하세요. 각 단계에서 실제로 선택된 근거를 확인할 수 있습니다.</p></div><div class="result-label"><span>02 / 검색 근거</span><span id="evidenceCount">0 SOURCES</span></div><div id="evidenceList" class="evidence-list"><div class="empty-evidence">검색 근거가 여기에 카드로 나타납니다.</div></div></div>
           <div id="compareOutput" class="compare-output" hidden></div>
         </div></div>
@@ -94,7 +94,8 @@
 <div id="methodSearch" class="method-search-backdrop" hidden><section class="method-search-box" role="dialog" aria-modal="true" aria-label="방법론 빠른 탐색"><div class="search-heading">QUICK NAVIGATION <button id="methodSearchClose" aria-label="닫기">ESC ×</button></div><input id="methodSearchInput" placeholder="RAPTOR, PPR, multimodal, GraphRAG…" aria-label="방법론 검색" autocomplete="off"><div id="methodSearchResults" class="method-search-results"></div><small>↑↓ 탐색 · ENTER 선택 · ESC 닫기</small></section></div>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 <div id="presentation" class="presentation" hidden><div class="presentation-top"><span>◈ &nbsp; GRAPHATLAS / TECH EXCHANGE</span><div><span id="slideCounter">01 / 32</span><button id="notesToggle" class="presentation-btn">발표자 노트 N</button><button id="closePresent" class="presentation-btn">닫기 ESC</button></div></div><div id="slideContent" class="slide-content"></div><div id="slideNotes" class="slide-notes" hidden></div><div class="presentation-bottom"><button id="prevSlide" class="presentation-arrow">←</button><div class="presentation-progress"><div id="slideProgress"></div></div><button id="nextSlide" class="presentation-arrow">→</button></div></div>
-<script src="/static/ontology-focus.js?v=20261027-ontology-focus" defer></script>
-<script src="/static/app.js?v=20261027-ontology-focus" defer></script>
+<script src="/static/ontology-focus.js?v=20261027-search-objects" defer></script>
+<script src="/static/graph-objects.js?v=20261027-search-objects" defer></script>
+<script src="/static/app.js?v=20261027-search-objects" defer></script>
 </body>
 </html>

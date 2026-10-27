@@ -210,9 +210,9 @@ def create_index(mode: str, docs: list[dict], use_sample: bool = False, image_da
     if image_data_url:
         if mode == 'live':
             description=caption_image(image_data_url)
-            clean.append({'id':f'D{len(clean)+1}','title':'업로드 이미지 · Vision 해석','text':'[이미지에서 관찰한 내용] '+description,'topic':'image'})
+            clean.append({'id':f'D{len(clean)+1}','title':'업로드 이미지 · Vision 해석','text':'[이미지에서 관찰한 내용] '+description,'topic':'image','source_kind':'image_caption'})
         else:
-            clean.append({'id':f'D{len(clean)+1}','title':'업로드 이미지 (Offline 미해석)','text':'이미지가 첨부되었습니다. 실제 이미지 내용은 Live 모드에서 Vision API로 분석됩니다.','topic':'image'})
+            clean.append({'id':f'D{len(clean)+1}','title':'업로드 이미지 (Offline 미해석)','text':'이미지가 첨부되었습니다. 실제 이미지 내용은 Live 모드에서 Vision API로 분석됩니다.','topic':'image','source_kind':'image_unparsed'})
     extractor='OpenAI grounded JSON extraction' if mode=='live' else 'sample triples' if use_sample else 'lexical co-occurrence (no semantic relation extraction)'
     if mode=='live':
         triples, atoms = extract_live(clean)
@@ -471,7 +471,7 @@ def retrieve(index: Index, query: str, method: str, qvec: list[float] | None = N
     elif method=='raganything':
         multimodal=[d for d in index.docs if '이미지' in d['title'] or '다이어그램' in d['title']]
         selected=[d['id'] for d in multimodal[:2]]+[d for d,_ in docs[:3]]
-        focus=['멀티모달 이미지/다이어그램','문서 연결']
+        focus=list(dict.fromkeys(selected))
         trace=['Vision 모드에서 이미지→텍스트 설명 인덱싱 (인덱싱 단계)','Image 설명과 Document를 같은 검색 공간에서 검색','가장 관련 있는 텍스트/이미지 근거를 종합']
     elif method=='whenuse':
         globalq=any(w in query for w in ('전체','전반','핵심','전략','쟁점','공통','요약','주제','트렌드'))
@@ -495,7 +495,12 @@ def retrieve(index: Index, query: str, method: str, qvec: list[float] | None = N
            {'title':'05 / Selected evidence','kind':'context','data':ev}]
     if method!='baseline':
         steps.insert(2,{'title':'Index entity grounding scores (query NER is not run)','kind':'entities','data':sorted(ret.entity_scores().items(),key=lambda x:(-x[1],x[0]))})
-    return {'method':method,'evidence':ev,'trace':trace,'focus':focus,'route':None,'reason':reason,'steps':steps}
+    focus_type='community' if method in ('raptor','graphrag','archrag') else 'atom' if method=='atomicrag' else 'document' if method=='raganything' else 'entity'
+    focus_objects=([{'type':'entity','id':e} for e,_ in ent]+[{'type':'community','id':g} for g,_ in winner_groups]
+                   if method=='greasoner' else [{'type':focus_type,'id':k} for k in focus])
+    result={'method':method,'evidence':ev,'trace':trace,'focus':focus,'focus_objects':focus_objects,'route':None,'reason':reason,'steps':steps}
+    result['visualization']=retrieval_visualization(index,result)
+    return result
 
 
 
@@ -533,6 +538,61 @@ def answer(index: Index, method: str, query: str) -> dict:
     retrieved['metrics']={'seconds':round(time.perf_counter()-t0,2),'evidence_count':len(retrieved['evidence']),
                           'mode':index.mode, 'answer_kind':'generated' if index.mode=='live' else 'retrieved-preview'}
     return retrieved
+
+
+def retrieval_visualization(index: Index, result: dict) -> dict:
+    """Render only real retrieval objects and their stored provenance links.
+
+    Typed IDs keep an entity literally named D1 distinct from document D1.
+    Selected evidence is never dropped by the index preview's entity limit.
+    """
+    docs={d['id']:d for d in index.docs}
+    groups={g['id']:g for g in index.groups}
+    atoms={a['id']:a for a in index.atoms}
+    entity_set=set(index.entities)
+    nodes={};edges={}
+    def node(kind, raw_id, selected=False, focused=False, score=None):
+        key=kind+':'+raw_id
+        if key not in nodes:
+            obj=docs.get(raw_id,{}) if kind=='document' else groups.get(raw_id,{}) if kind=='community' else atoms.get(raw_id,{}) if kind=='atom' else {}
+            typ='image' if kind=='document' and obj.get('source_kind') in ('image_caption','image_unparsed') else kind
+            nodes[key]={'id':key,'source_id':raw_id,'type':typ,'label':raw_id if kind=='entity' else raw_id+' · '+obj.get('title',{'atom':'작은 사실','community':'그룹 요약'}.get(kind,'')),
+                        'text':obj.get('text',''),'selected':False,'focused':False,'source_kind':obj.get('source_kind','')}
+        n=nodes[key];n['selected']|=selected;n['focused']|=focused
+        if score is not None:n['score']=score
+        return key
+    def link(a,b,label,doc_id=''):
+        edges[(a,b,label,doc_id)]={'source':a,'target':b,'label':label,'doc_id':doc_id}
+    for e in result['evidence']:
+        node(e['type'],e['id'],selected=True,score=e['score'])
+    for f in result.get('focus_objects',[]):
+        # Never synthesize an object from a descriptive placeholder string.
+        pool=docs if f['type']=='document' else groups if f['type']=='community' else atoms if f['type']=='atom' else entity_set
+        if f['id'] in pool:node(f['type'],f['id'],focused=True)
+    for n in list(nodes.values()):
+        raw=n['source_id']
+        if n['type']=='community':
+            for did in groups[raw]['doc_ids']:
+                if did in docs:link(n['id'],node('document',did),'요약에 포함된 원문',did)
+        elif n['type']=='atom':
+            did=atoms[raw]['doc_id']
+            if did in docs:link(n['id'],node('document',did),'사실의 원문',did)
+    # Add the actual source document for each focused entity, plus the entities
+    # appearing in selected/source documents. These are context, not selections.
+    focused_entities={n['source_id'] for n in nodes.values() if n['type']=='entity' and n['focused']}
+    context_docs={n['source_id'] for n in nodes.values() if n['type'] in ('document','image')}
+    for t in index.triples:
+        if t['source'] in focused_entities or t['target'] in focused_entities:context_docs.add(t['doc_id'])
+    for t in index.triples:
+        if t['doc_id'] not in context_docs:continue
+        a=node('entity',t['source']);b=node('entity',t['target'])
+        link(a,b,t['relation'],t['doc_id'])
+        if t['doc_id'] in docs:
+            doc=node('document',t['doc_id'])
+            link(doc,a,'원문에 등장',t['doc_id']);link(doc,b,'원문에 등장',t['doc_id'])
+    return {'nodes':list(nodes.values()),'edges':list(edges.values()),'method':result['method'],
+            'source_note':'업로드 이미지가 없어 이번 검색은 원문 문서를 표시합니다. 다이어그램을 설명한 텍스트를 실제 이미지 노드로 만들지는 않습니다.' if result['method']=='raganything' and not any(d.get('source_kind') in ('image_caption','image_unparsed') for d in index.docs) else '',
+            'note':'실습의 실제 선택 객체와 저장된 원문 연결입니다. 밝은 테두리=최종 근거, 분홍 테두리=검색 중 주목한 대상, 흐린 노드=연결 확인용 원문·개체입니다. 논문 전체 그래프를 재현한 것은 아닙니다.'}
 
 
 def graph_payload(index: Index, limit=46) -> dict:

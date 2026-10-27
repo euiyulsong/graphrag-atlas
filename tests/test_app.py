@@ -32,6 +32,12 @@ def test_13_method_end_to_end_offline(demo_index):
         assert data['answer'].startswith('OFFLINE')
         assert len(data['trace'])>=3
         assert data['metrics']['mode']=='offline'
+        graph=data['visualization']
+        nodes={n['id']:n for n in graph['nodes']}
+        for e in data['evidence']:
+            assert nodes[e['type']+':'+e['id']]['selected'], (method['id'],e['id'])
+        assert all(e['source'] in nodes and e['target'] in nodes for e in graph['edges'])
+        assert all(n['source_id'] not in ('멀티모달 이미지/다이어그램','문서 연결') for n in nodes.values())
 
 
 def test_compare_and_provenance(demo_index):
@@ -54,6 +60,26 @@ def test_image_offline_explicitly_not_analyzed():
     response=client.post('/api/index',json={'mode':'offline','use_sample':True,'image_data_url':payload})
     assert response.status_code==200
     assert response.json()['stats']['vision'] is False
+    result=client.post('/api/ask',json={'index_id':response.json()['index_id'],'method':'raganything','question':'업로드 이미지 내용을 확인해줘'}).json()
+    images=[n for n in result['visualization']['nodes'] if n['type']=='image']
+    assert images and images[0]['selected']
+    assert images[0]['source_kind']=='image_unparsed'
+
+
+def test_document_and_same_named_entity_are_distinct_visual_objects():
+    idx=engine.create_index('offline',[],use_sample=True)
+    idx.triples.append({'source':'D1','target':'Atlas','relation':'mentions','doc_id':'D1'})
+    result=engine.retrieve(idx,'Atlas','baseline')
+    nodes={n['id']:n for n in result['visualization']['nodes']}
+    assert nodes['document:D1']['type']=='document'
+    assert nodes['entity:D1']['type']=='entity'
+    assert nodes['document:D1']['selected']
+
+
+def test_text_mention_of_diagram_does_not_invent_uploaded_image():
+    idx=engine.create_index('offline',[],use_sample=True)
+    result=engine.retrieve(idx,'다이어그램 데이터 흐름','raganything')
+    assert not any(n['type']=='image' for n in result['visualization']['nodes'])
 
 
 def test_live_requires_server_key(monkeypatch):
