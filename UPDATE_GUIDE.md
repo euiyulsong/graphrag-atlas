@@ -27,3 +27,7 @@ Both lab screens now include four-step audience instructions and expandable pres
 ## Document-link teaching example
 
 Slide 13 now shows the actual describes and text facts, the inferred system results, and the document lookup steps. The notes clarify the document-to-system direction, manually authored links, and Python evidence lookup after SPARQL.
+
+## Ontology focus and error explanations
+
+Each lesson now distinguishes comparison exercises from deliberately broken data. Schema, facts and SHACL show selected lines from the current input with token highlights and line numbers. Full editors are expandable. The inference setting is prominent near the lesson goal. Result summaries use actual query rows and SHACL violations, and warn when input has changed since the last run.
