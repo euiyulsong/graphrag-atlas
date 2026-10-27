@@ -168,7 +168,7 @@ def test_presentation_download_and_presenter_notes():
     assert response.status_code==200
     assert response.content[:2]==b'PK'
     deck=Presentation(BytesIO(response.content))
-    assert len(deck.slides)==60
+    assert len(deck.slides)==30
     assert all(s.notes_slide.notes_text_frame.text.strip() for s in deck.slides)
     assert client.get('/api/health').json()['ok']
 
@@ -179,11 +179,9 @@ def test_gpt6_luna_compatible_params(monkeypatch):
     assert settings['reasoning_effort']=='none'
     assert 'temperature' not in settings
 
-def test_public_deploy_basicauth(monkeypatch):
-    import base64
-    monkeypatch.setenv('DEMO_PASSWORD','local-test-only')
+def test_public_access_without_credentials(monkeypatch):
     monkeypatch.setenv('RENDER','true')
-    assert client.get('/').status_code==401
-    assert client.get('/api/health').status_code==200
-    cred=base64.b64encode(b'seminar:local-test-only').decode()
-    assert client.get('/api/bootstrap',headers={'Authorization':'Basic '+cred}).status_code==200
+    monkeypatch.setenv('DEMO_PASSWORD','unused-old-setting')
+    assert client.get('/').status_code==200
+    assert client.get('/api/bootstrap').status_code==200
+

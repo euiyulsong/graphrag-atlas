@@ -25,24 +25,6 @@ app=FastAPI(title='GraphRAG Seminar Studio', docs_url='/api/docs', redoc_url=Non
 app.mount('/static', StaticFiles(directory=ROOT/'static'), name='static')
 STATES:OrderedDict=OrderedDict()
 
-@app.middleware('http')
-async def deploy_auth(request: Request, call_next):
-    # Only enabled when DEMO_PASSWORD is set; development remains friction-free.
-    password=os.getenv('DEMO_PASSWORD','')
-    if os.getenv('RENDER') and not password:
-        return Response('Deployment requires DEMO_PASSWORD',status_code=503)
-    if request.url.path == '/api/health':
-        return await call_next(request)
-    if not password:
-        return await call_next(request)
-    provided=request.headers.get('Authorization','')
-    expected='Basic '+base64.b64encode(('seminar:'+password).encode()).decode()
-    if not hmac.compare_digest(provided,expected):
-        return Response('Authentication required',status_code=401,
-                        headers={'WWW-Authenticate':'Basic realm="GraphRAG Seminar"',
-                                 'Cache-Control':'no-store'})
-    return await call_next(request)
-
 LOCK=Lock()
 
 class Doc(BaseModel):
@@ -72,7 +54,7 @@ def home():
 
 @app.get('/api/health')
 def health():
-    return {'ok': True, 'version':'search-objects-2026-10-27'}
+    return {'ok': True, 'version':'compact-public-2026-10-27'}
 
 @app.get('/api/download/slides')
 def download_slides():

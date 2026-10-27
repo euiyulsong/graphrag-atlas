@@ -32,5 +32,5 @@ def test_shapes_do_not_execute_remote_sparql():
 
 def test_workshop_presentation_available():
     ex=client.get('/api/ontology/example').json();assert len(ex['lessons'])==6
-    data=client.get('/api/bootstrap').json();assert len(data['workshop'])==59
+    data=client.get('/api/bootstrap').json();assert len(data['workshop'])==29
     assert all(x['sources'] and x['notes'] for x in data['workshop'])
