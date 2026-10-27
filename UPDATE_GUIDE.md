@@ -23,3 +23,7 @@ The 60-slide presentation now groups each method as concept, logistics question,
 ## Guided lab instructions
 
 Both lab screens now include four-step audience instructions and expandable presenter cues. Ontology instructions follow the selected lesson. Setup controls prepare a no-API ontology comparison and an offline HippoRAG/baseline exercise without running queries automatically. GraphRAG sample names are explained by their roles.
+
+## Document-link teaching example
+
+Slide 13 now shows the actual describes and text facts, the inferred system results, and the document lookup steps. The notes clarify the document-to-system direction, manually authored links, and Python evidence lookup after SPARQL.

@@ -72,7 +72,7 @@ def home():
 
 @app.get('/api/health')
 def health():
-    return {'ok': True, 'version':'guided-labs-2026-10-27'}
+    return {'ok': True, 'version':'document-link-2026-10-27'}
 
 @app.get('/api/download/slides')
 def download_slides():
