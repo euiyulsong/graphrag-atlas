@@ -19,3 +19,7 @@ All 60 slides now use plain Korean labels. Speaker notes walk the visible rows o
 ## Connected presentation revision
 
 The 60-slide presentation now groups each method as concept, logistics question, and process diagram. Summary/group methods are adjacent, PPR precedes HippoRAG, and the former appendix diagrams are integrated with their examples. Each slide includes a visible narrative bridge and aligned conversational notes. Web presentation and downloadable PPTX use the same order and script.
+
+## Guided lab instructions
+
+Both lab screens now include four-step audience instructions and expandable presenter cues. Ontology instructions follow the selected lesson. Setup controls prepare a no-API ontology comparison and an offline HippoRAG/baseline exercise without running queries automatically. GraphRAG sample names are explained by their roles.
